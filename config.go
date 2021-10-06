@@ -19,12 +19,20 @@ type device struct {
 	DisplayName string
 	Username    string
 	Password    string
+	IPAddress   string
 	MACAddress  string
 	Type        string
 }
 
 func (d device) getStatusURL() string {
-	return fmt.Sprintf("http://shelly%s-%s/status", d.Type, d.MACAddress)
+	var statusURL string
+	if d.IPAddress != "" {
+		statusURL = fmt.Sprintf("http://%s/status", d.IPAddress)
+	}
+	if d.MACAddress != "" {
+		statusURL = fmt.Sprintf("http://shelly%s-%s/status", d.Type, d.MACAddress)
+	}
+	return statusURL
 }
 
 func getConfig() configuration {
