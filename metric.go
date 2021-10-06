@@ -38,6 +38,13 @@ var (
 		labels,
 	)
 
+	powerGauge = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "shelly_power",
+			Help: "Shows current power in watts"},
+		labels,
+	)
+
 	uptimeGauge = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "shelly_uptime",
@@ -58,6 +65,7 @@ func registerMetrics() {
 	prometheus.Register(temperatureGauge)
 	prometheus.Register(isOvertemperatureGauge)
 	prometheus.Register(voltageGauge)
+	prometheus.Register(powerGauge)
 	prometheus.Register(uptimeGauge)
 	prometheus.Register(isUpdateAvailableGauge)
 }
