@@ -43,9 +43,9 @@ func bool2float64(b bool) float64 {
 func fetchDevices(config configuration) {
 	for _, device := range config.Devices {
 		labels := map[string]string{
-			"name": device.DisplayName,
-			"mac":  device.MACAddress,
-			"type": device.Type,
+			"name":    device.DisplayName,
+			"address": device.IPAddress,
+			"type":    device.Type,
 		}
 
 		statusResponse, err := getStatusResponseFromDevice(config, device)

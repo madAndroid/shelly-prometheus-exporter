@@ -5,7 +5,7 @@ import (
 )
 
 var (
-	labels = []string{"name", "mac", "type"}
+	labels = []string{"name", "address", "type"}
 
 	errorCounter = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
