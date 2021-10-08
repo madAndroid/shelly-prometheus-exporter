@@ -44,6 +44,17 @@ func TestStatusResponseToStruct(t *testing.T) {
       "positioning": true
     }
   ],
+  "relays": [
+    {
+      "ison": true,
+      "has_timer": false,
+      "timer_started": 0,
+      "timer_duration": 0,
+      "timer_remaining": 0,
+      "overpower": false,
+      "source": "cloud"
+    }
+  ],
   "meters": [
     {
       "power": 0.00,

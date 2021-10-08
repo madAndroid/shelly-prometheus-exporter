@@ -60,11 +60,11 @@ func fetchDevices(config configuration) {
 		voltageGauge.With(labels).Set(float64(statusResponse.Voltage))
 		uptimeGauge.With(labels).Set(float64(statusResponse.Uptime))
 		isUpdateAvailableGauge.With(labels).Set(bool2float64(statusResponse.HasUpdate))
-		for _, metric := range statusResponse.Relays {
-			relayStateGauge.With(labels).Set(bool2float64(metric.State))
+		for _, relayMetric := range statusResponse.Relays {
+			relayStateGauge.With(labels).Set(bool2float64(relayMetric.State))
 		}
-		for _, metric := range statusResponse.Meters {
-			powerGauge.With(labels).Set(float64(metric.Power))
+		for _, meterMetric := range statusResponse.Meters {
+			powerGauge.With(labels).Set(float64(meterMetric.Power))
 		}
 
 	}

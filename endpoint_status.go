@@ -47,11 +47,11 @@ type Meters struct {
 }
 
 type Relays struct {
-	State           bool    `json:"ison"`
-	HasTimer        bool    `json:"has_timer"`
-	TimerStarted    int     `json:"timer_started"`
-	TimerDuration   int     `json:"timer_duration"`
-	timer_remaining int     `json:"timer_remaining"`
-	Overpower       float32 `json:"overpower"`
-	Source          string  `json:"source"`
+	State           bool   `json:"ison"`
+	HasTimer        bool   `json:"has_timer"`
+	TimerStarted    int    `json:"timer_started"`
+	TimerDuration   int    `json:"timer_duration"`
+	timer_remaining int    `json:"timer_remaining"`
+	Overpower       bool   `json:"overpower"`
+	Source          string `json:"source"`
 }
