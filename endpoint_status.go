@@ -5,8 +5,8 @@ type StatusResponse struct {
 	WiFiStatus      WiFi     `json:"wifi_sta"`
 	Cloud           Cloud    `json:"cloud"`
 	MQTT            MQTT     `json:"mqtt"`
-	Meters          []Meters `json:"meters"`
 	Relays          []Relays `json:"relays"`
+	Meters          []Meters `json:"meters"`
 	Serial          int      `json:"serial"`
 	HasUpdate       bool     `json:"has_update"`
 	MACAddress      string   `json:"mac"`
