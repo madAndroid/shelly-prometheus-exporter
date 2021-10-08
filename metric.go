@@ -52,6 +52,13 @@ var (
 		labels,
 	)
 
+	relayStateGauge = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "shelly_relay_state",
+			Help: "Shows current relay state"},
+		labels,
+	)
+
 	isUpdateAvailableGauge = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "shelly_update_available",
@@ -67,5 +74,6 @@ func registerMetrics() {
 	prometheus.Register(voltageGauge)
 	prometheus.Register(powerGauge)
 	prometheus.Register(uptimeGauge)
+	prometheus.Register(relayStateGauge)
 	prometheus.Register(isUpdateAvailableGauge)
 }

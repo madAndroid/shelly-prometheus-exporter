@@ -6,6 +6,7 @@ type StatusResponse struct {
 	Cloud           Cloud    `json:"cloud"`
 	MQTT            MQTT     `json:"mqtt"`
 	Meters          []Meters `json:"meters"`
+	Relays          []Relays `json:"relays"`
 	Serial          int      `json:"serial"`
 	HasUpdate       bool     `json:"has_update"`
 	MACAddress      string   `json:"mac"`
@@ -43,4 +44,14 @@ type Meters struct {
 	Timestamp int       `json:"timestamp"`
 	Counters  []float32 `json:"counters"`
 	Total     int       `json:"total"`
+}
+
+type Relays struct {
+	State           bool    `json:"ison"`
+	HasTimer        bool    `json:"has_timer"`
+	TimerStarted    int     `json:"timer_started"`
+	TimerDuration   int     `json:"timer_duration"`
+	timer_remaining int     `json:"timer_remaining"`
+	Overpower       float32 `json:"overpower"`
+	Source          string  `json:"source"`
 }

@@ -1,4 +1,4 @@
-FROM arm32v7/golang as dependencies
+FROM golang:1.15.2 as dependencies
 WORKDIR /go/src/app
 ENV GO111MODULE=on
 COPY go.mod .
@@ -10,7 +10,7 @@ COPY . .
 RUN go test ./... -timeout 30s -cover
 RUN CGO_ENABLED=0 go build -o shelly-exporter
 
-FROM arm32v7/alpine
+FROM alpine:latest
 LABEL maintainer="Alex Voigt <mail@alexander-voigt.info>"
 WORKDIR /app/
 VOLUME ["/app"]
