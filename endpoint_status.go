@@ -2,22 +2,23 @@ package main
 
 type StatusResponse struct {
 	Device          device
-	WiFiStatus      WiFi     `json:"wifi_sta"`
-	Cloud           Cloud    `json:"cloud"`
-	MQTT            MQTT     `json:"mqtt"`
-	Relays          []Relays `json:"relays"`
-	Meters          []Meters `json:"meters"`
-	Serial          int      `json:"serial"`
-	HasUpdate       bool     `json:"has_update"`
-	MACAddress      string   `json:"mac"`
-	Temperature     float32  `json:"temperature"`
-	Overtemperature bool     `json:"overtemperature"`
-	MemoryTotal     int      `json:"ram_total"`
-	MemoryFree      int      `json:"ram_free"`
-	FilesystemSize  int      `json:"fs_size"`
-	FilesystemFree  int      `json:"fs_free"`
-	Voltage         float32  `json:"voltage"`
-	Uptime          int      `json:"uptime"`
+	WiFiStatus      WiFi          `json:"wifi_sta"`
+	Cloud           Cloud         `json:"cloud"`
+	MQTT            MQTT          `json:"mqtt"`
+	Relays          []Relays      `json:"relays"`
+	Meters          []OnePMMeters `json:"meters"`
+	EMeters         []EMMeters    `json:"emeters"`
+	Serial          int           `json:"serial"`
+	HasUpdate       bool          `json:"has_update"`
+	MACAddress      string        `json:"mac"`
+	Temperature     float32       `json:"temperature"`
+	Overtemperature bool          `json:"overtemperature"`
+	MemoryTotal     int           `json:"ram_total"`
+	MemoryFree      int           `json:"ram_free"`
+	FilesystemSize  int           `json:"fs_size"`
+	FilesystemFree  int           `json:"fs_free"`
+	Voltage         float32       `json:"voltage"`
+	Uptime          int           `json:"uptime"`
 }
 
 type WiFi struct {
@@ -36,7 +37,7 @@ type MQTT struct {
 	Connected bool `json:"connected"`
 }
 
-type Meters struct {
+type OnePMMeters struct {
 	Connected bool      `json:"connected"`
 	Power     float32   `json:"power"`
 	Overpower float32   `json:"overpower"`
@@ -44,6 +45,15 @@ type Meters struct {
 	Timestamp int       `json:"timestamp"`
 	Counters  []float32 `json:"counters"`
 	Total     int       `json:"total"`
+}
+
+type EMMeters struct {
+	Power    float32 `json:"power"`
+	Reactive float32 `json:"reactive"`
+	Voltage  float32 `json:"voltage"`
+	Valid    bool    `json:"is_valid"`
+	Total    float32 `json:"total"`
+	TotalRet float32 `json:"total_returned"`
 }
 
 type Relays struct {
