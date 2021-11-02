@@ -67,7 +67,7 @@ func fetchDevices(config configuration) {
 			powerGauge.With(labels).Set(float64(meterMetric.Power))
 		}
 		for _, eMeterMetric := range statusResponse.EMeters {
-			fmt.Println(eMeterMetric)
+			fmt.Println(eMeterMetric.Power)
 			powerGauge.With(labels).Set(float64(eMeterMetric.Power))
 		}
 
