@@ -61,13 +61,13 @@ func fetchDevices(config configuration) {
 		uptimeGauge.With(labels).Set(float64(statusResponse.Uptime))
 		isUpdateAvailableGauge.With(labels).Set(bool2float64(statusResponse.HasUpdate))
 		for _, relayMetric := range statusResponse.Relays {
-			fmt.Println(relayMetric.State)
 			relayStateGauge.With(labels).Set(bool2float64(relayMetric.State))
 		}
 		for _, meterMetric := range statusResponse.Meters {
 			powerGauge.With(labels).Set(float64(meterMetric.Power))
 		}
 		for _, eMeterMetric := range statusResponse.EMeters {
+			fmt.Println(eMeterMetric)
 			powerGauge.With(labels).Set(float64(eMeterMetric.Power))
 		}
 
