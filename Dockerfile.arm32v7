@@ -1,16 +1,16 @@
-FROM arm32v7/golang as dependencies
+FROM arm32v7/golang:1.19.2-bullseye as dependencies
 WORKDIR /go/src/app
 ENV GO111MODULE=on
 COPY go.mod .
 COPY go.sum .
-RUN go mod download
+RUN go mod download -json -x
 
 FROM dependencies as builder
 COPY . .
 RUN go test ./... -timeout 30s -cover
-RUN CGO_ENABLED=0 go build -o shelly-exporter
+RUN go build -o shelly-exporter
 
-FROM arm32v7/alpine
+FROM arm32v7/debian:bullseye-20221004-slim
 LABEL maintainer="Alex Voigt <mail@alexander-voigt.info>"
 WORKDIR /app/
 VOLUME ["/app"]

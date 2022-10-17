@@ -68,7 +68,7 @@ func fetchDevices(config configuration) {
 		}
 		for i, eMeterMetric := range statusResponse.EMeters {
 			labels = map[string]string{
-				"name":    device.DisplayName + fmt.Sprintf("-Channel-%d", i)
+				"name":    device.DisplayName + fmt.Sprintf("-Channel-%d", i),
 				"address": device.IPAddress,
 				"type":    device.Type,
 			}
