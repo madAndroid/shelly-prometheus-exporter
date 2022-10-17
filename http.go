@@ -69,7 +69,7 @@ func fetchDevices(config configuration) {
 		for i, eMeterMetric := range statusResponse.EMeters {
 			labels = map[string]string{
 				"name":    device.DisplayName + fmt.Sprintf("-Channel-%d", i),
-				"address": device.IPAddress,
+				"address": device.IPAddress + fmt.Sprintf("-Channel-%d", i),
 				"type":    device.Type,
 			}
 			powerGauge.With(labels).Set(float64(eMeterMetric.Power))
