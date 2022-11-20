@@ -10,8 +10,8 @@ COPY . .
 RUN go test ./... -timeout 30s -cover
 RUN go build -o shelly-exporter
 
-#FROM debian:bullseye-slim
-FROM alpine:latest
+FROM debian:bullseye-slim
+#FROM alpine:latest
 LABEL maintainer="Alex Voigt <mail@alexander-voigt.info>"
 WORKDIR /app/
 VOLUME ["/app"]
