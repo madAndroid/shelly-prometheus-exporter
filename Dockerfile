@@ -8,7 +8,7 @@ RUN go mod download -json -x
 FROM dependencies as builder
 COPY . .
 RUN go test ./... -timeout 30s -cover
-RUN go build -o shelly-exporter
+RUN CGO_ENABLED=0 go build -o shelly-exporter
 
 FROM debian:bullseye-slim
 #FROM alpine:latest
