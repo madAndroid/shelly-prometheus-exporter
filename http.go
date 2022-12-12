@@ -33,6 +33,33 @@ func getStatusResponseFromDevice(config configuration, d device) (*StatusRespons
 	return statusResponse, nil
 }
 
+func getStatusResponseFromGen2Device(config configuration, d device) (*StatusResponseGen2, error) {
+	httpClient := &http.Client{Timeout: config.RequestTimeout}
+
+	request, err := http.NewRequest("GET", d.getStatusURL(), nil)
+	if err != nil {
+		return nil, fmt.Errorf("could not create request: %v", err)
+	}
+
+	if d.Username != "" && d.Password != "" {
+		request.SetBasicAuth(d.Username, d.Password)
+	}
+
+	response, err := httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("error while doing the request for device '%s': %v", d.DisplayName, err)
+	}
+	defer response.Body.Close()
+
+	statusResponse := new(StatusResponseGen2)
+	err = json.NewDecoder(response.Body).Decode(statusResponse)
+	if err != nil {
+		return nil, err
+	}
+
+	return statusResponse, nil
+}
+
 func bool2float64(b bool) float64 {
 	if b {
 		return 1
@@ -48,24 +75,29 @@ func fetchDevices(config configuration) {
 			"type":    device.Type,
 		}
 
-		statusResponse, err := getStatusResponseFromDevice(config, device)
-		if err != nil {
-			fmt.Println(err)
-			errorCounter.With(labels).Inc()
-			continue
-		}
-
-		if device.Type != "" {
-			setGaugeGen1(statusResponse)
+		if device.Generation != 2 {
+			statusResponse, err := getStatusResponseFromDevice(config, device)
+			if err != nil {
+				fmt.Println(err)
+				errorCounter.With(labels).Inc()
+				continue
+			}
+			setGaugeGen1(labels, device, statusResponse)
 		} else {
-			setGaugeGen2(statusResponse)
+			statusResponseGen2, err := getStatusResponseFromGen2Device(config, device)
+			if err != nil {
+				fmt.Println(err)
+				errorCounter.With(labels).Inc()
+				continue
+			}
+			setGaugeGen2(labels, device, statusResponseGen2)
 		}
 	}
 }
 
-func setGaugeGen1(status StatusResponse) {
+func setGaugeGen1(labels map[string]string, device device, status *StatusResponse) {
 
-	temperatureGauge.With(labels).Set(float66(status.Temperature))
+	temperatureGauge.With(labels).Set(float64(status.Temperature))
 	isOvertemperatureGauge.With(labels).Set(bool2float64(status.Overtemperature))
 	voltageGauge.With(labels).Set(float64(status.Voltage))
 	uptimeGauge.With(labels).Set(float64(status.Uptime))
@@ -84,5 +116,12 @@ func setGaugeGen1(status StatusResponse) {
 		}
 		powerGauge.With(labels).Set(float64(eMeterMetric.Power))
 	}
+
+}
+
+func setGaugeGen2(labels map[string]string, device device, status *StatusResponseGen2) {
+
+	voltageGauge.With(labels).Set(float64(status.Switch0.Voltage))
+	powerGauge.With(labels).Set(float64(status.Switch0.Power))
 
 }

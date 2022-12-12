@@ -21,6 +21,18 @@ type StatusResponse struct {
 	Uptime          int           `json:"uptime"`
 }
 
+// Gen2:
+type StatusResponseGen2 struct {
+	Device  device
+	WiFi    WiFi   `json:"wifi"`
+	Cloud   Cloud  `json:"cloud"`
+	MQTT    MQTT   `json:"mqtt"`
+	Switch0 Switch `json:"switch:0"`
+	Switch1 Switch `json:"switch:1"`
+	Switch2 Switch `json:"switch:2"`
+	Switch3 Switch `json:"switch:3"`
+}
+
 type WiFi struct {
 	Connected bool    `json:"connected"`
 	SSID      string  `json:"ssid"`
@@ -68,4 +80,13 @@ type Relays struct {
 	timer_remaining int    `json:"timer_remaining"`
 	Overpower       bool   `json:"overpower"`
 	Source          string `json:"source"`
+}
+
+// Gen2:
+type Switch struct {
+	Id      int     `json:"id"`
+	Output  bool    `json:"output"`
+	Power   float32 `json:"apower"`
+	Voltage float32 `json:"voltage"`
+	Current float32 `json:"current"`
 }
