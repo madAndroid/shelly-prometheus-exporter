@@ -47,6 +47,10 @@ type OnePMMeters struct {
 	Total     int       `json:"total"`
 }
 
+type OnePlusPMMeters struct {
+	Power float32 `json:"apower"`
+}
+
 type EMMeters struct {
 	Power    float32 `json:"power"`
 	Reactive float32 `json:"reactive"`

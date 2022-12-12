@@ -55,24 +55,34 @@ func fetchDevices(config configuration) {
 			continue
 		}
 
-		temperatureGauge.With(labels).Set(float64(statusResponse.Temperature))
-		isOvertemperatureGauge.With(labels).Set(bool2float64(statusResponse.Overtemperature))
-		voltageGauge.With(labels).Set(float64(statusResponse.Voltage))
-		uptimeGauge.With(labels).Set(float64(statusResponse.Uptime))
-		isUpdateAvailableGauge.With(labels).Set(bool2float64(statusResponse.HasUpdate))
-		for _, relayMetric := range statusResponse.Relays {
-			relayStateGauge.With(labels).Set(bool2float64(relayMetric.State))
-		}
-		for _, meterMetric := range statusResponse.Meters {
-			powerGauge.With(labels).Set(float64(meterMetric.Power))
-		}
-		for i, eMeterMetric := range statusResponse.EMeters {
-			labels = map[string]string{
-				"name":    device.DisplayName + fmt.Sprintf("-Channel-%d", i),
-				"address": device.IPAddress + fmt.Sprintf("-Channel-%d", i),
-				"type":    device.Type,
-			}
-			powerGauge.With(labels).Set(float64(eMeterMetric.Power))
+		if device.Type != "" {
+			setGaugeGen1(statusResponse)
+		} else {
+			setGaugeGen2(statusResponse)
 		}
 	}
+}
+
+func setGaugeGen1(status StatusResponse) {
+
+	temperatureGauge.With(labels).Set(float66(status.Temperature))
+	isOvertemperatureGauge.With(labels).Set(bool2float64(status.Overtemperature))
+	voltageGauge.With(labels).Set(float64(status.Voltage))
+	uptimeGauge.With(labels).Set(float64(status.Uptime))
+	isUpdateAvailableGauge.With(labels).Set(bool2float64(status.HasUpdate))
+	for _, relayMetric := range status.Relays {
+		relayStateGauge.With(labels).Set(bool2float64(relayMetric.State))
+	}
+	for _, meterMetric := range status.Meters {
+		powerGauge.With(labels).Set(float64(meterMetric.Power))
+	}
+	for i, eMeterMetric := range status.EMeters {
+		labels = map[string]string{
+			"name":    device.DisplayName + fmt.Sprintf("-Channel-%d", i),
+			"address": device.IPAddress + fmt.Sprintf("-Channel-%d", i),
+			"type":    device.Type,
+		}
+		powerGauge.With(labels).Set(float64(eMeterMetric.Power))
+	}
+
 }

@@ -32,6 +32,9 @@ func (d device) getStatusURL() string {
 	if d.MACAddress != "" {
 		statusURL = fmt.Sprintf("http://shelly%s-%s/status", d.Type, d.MACAddress)
 	}
+	if d.Type == "Plus1PM" {
+		statusURL = fmt.Sprintf("http://%s/rpc/Switch.GetStatus?id=0", d.IPAddress)
+	}
 	return statusURL
 }
 
