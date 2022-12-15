@@ -34,7 +34,7 @@ func (d device) getStatusURL() string {
 		statusURL = fmt.Sprintf("http://shelly%s-%s/status", d.Type, d.MACAddress)
 	}
 	if d.Generation == 2 {
-		statusURL = fmt.Sprintf("http://%s/rpc/Shelly.GetStatus", d.IPAddress)
+		statusURL = fmt.Sprintf("http://%s/rpc", d.IPAddress)
 	}
 	return statusURL
 }

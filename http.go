@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -36,7 +37,10 @@ func getStatusResponseFromDevice(config configuration, d device) (*StatusRespons
 func getStatusResponseFromGen2Device(config configuration, d device) (*StatusResponseGen2, error) {
 	httpClient := &http.Client{Timeout: config.RequestTimeout}
 
-	request, err := http.NewRequest("GET", d.getStatusURL(), nil)
+	var jsonStr = []byte(`{"id":1,"method":"Shelly.GetStatus"}`)
+	request, err := http.NewRequest("POST", d.getStatusURL(), bytes.NewBuffer(jsonStr))
+	request.Header.Set("Content-Type", "application/json")
+
 	if err != nil {
 		return nil, fmt.Errorf("could not create request: %v", err)
 	}

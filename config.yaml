@@ -6,9 +6,6 @@ devices:
     displayName: "OfficePlug"
     type: "1pm"
   - IPAddress: "192.168.66.152"
-    displayName: "LoungePlug"
-    type: "1pm"
-  - IPAddress: "192.168.66.11"
     displayName: "LoungeReplacement"
     type: "1pmPlus"
     generation: 2
