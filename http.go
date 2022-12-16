@@ -127,5 +127,6 @@ func setGaugeGen2(labels map[string]string, device device, status *StatusRespons
 
 	voltageGauge.With(labels).Set(float64(status.Switch0.Voltage))
 	powerGauge.With(labels).Set(float64(status.Switch0.Power))
+	relayStateGauge.With(labels).Set(bool2float64(status.Switch0.Output))
 
 }
