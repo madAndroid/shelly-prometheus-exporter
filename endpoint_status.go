@@ -31,6 +31,7 @@ type StatusResponseGen2 struct {
 	Switch1 Switch `json:"switch:1"`
 	Switch2 Switch `json:"switch:2"`
 	Switch3 Switch `json:"switch:3"`
+	System 	Sys    `json:"sys"`
 }
 
 type WiFi struct {
@@ -89,4 +90,16 @@ type Switch struct {
 	Power   float32 `json:"apower"`
 	Voltage float32 `json:"voltage"`
 	Current float32 `json:"current"`
+	Temperature Temperature `json:"temperature"`
+}
+
+type Temperature struct {
+	Celcius float32 `json:"tC"`
+}
+
+type Sys struct {
+	Mac     		string  `json:"mac"`
+	RestartRequired bool    `json:"restart_required"`
+	Uptime			int     `json:"uptime"`
+	Updates         interface{} `json:"available_updates"`
 }
