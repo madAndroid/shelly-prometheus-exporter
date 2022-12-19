@@ -1,11 +1,11 @@
 port: 9123
 requestTimeout: 5s
-scrapeInterval: 60s
+scrapeInterval: 10s
 devices:
   - IPAddress: "192.168.66.151"
     displayName: "OfficePlug"
     type: "1pm"
-  - IPAddress: "192.168.66.152"
-    displayName: "LoungeReplacement"
+  - IPAddress: "lounge-plug.int.stangl.co.za"
+    displayName: "LoungePlug"
     type: "1pmPlus"
     generation: 2

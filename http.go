@@ -94,6 +94,9 @@ func fetchDevices(config configuration) {
 				errorCounter.With(labels).Inc()
 				continue
 			}
+			fmt.Print("\n")
+			fmt.Print(statusResponseGen2)
+			fmt.Print("\n")
 			setGaugeGen2(labels, device, statusResponseGen2)
 		}
 	}
@@ -125,10 +128,10 @@ func setGaugeGen1(labels map[string]string, device device, status *StatusRespons
 
 func setGaugeGen2(labels map[string]string, device device, status *StatusResponseGen2) {
 
-	temperatureGauge.With(labels).Set(float64(status.Switch0.Temperature.Celcius))
+	relayStateGauge.With(labels).Set(bool2float64(status.Switch0.Output))
+	powerGauge.With(labels).Set(float64(status.Switch0.Power))
 	voltageGauge.With(labels).Set(float64(status.Switch0.Voltage))
 	uptimeGauge.With(labels).Set(float64(status.System.Uptime))
-	powerGauge.With(labels).Set(float64(status.Switch0.Power))
-	relayStateGauge.With(labels).Set(bool2float64(status.Switch0.Output))
+	temperatureGauge.With(labels).Set(float64(status.Switch0.Temperature.Celcius))
 
 }
