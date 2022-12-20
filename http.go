@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"log"
 	"fmt"
 	"net/http"
 )
@@ -90,13 +91,10 @@ func fetchDevices(config configuration) {
 		} else {
 			statusResponseGen2, err := getStatusResponseFromGen2Device(config, device)
 			if err != nil {
-				fmt.Println(err)
+				log.Println(err)
 				errorCounter.With(labels).Inc()
 				continue
 			}
-			fmt.Print("\n")
-			fmt.Print(statusResponseGen2)
-			fmt.Print("\n")
 			setGaugeGen2(labels, device, statusResponseGen2)
 		}
 	}
