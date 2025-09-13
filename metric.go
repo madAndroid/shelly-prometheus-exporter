@@ -38,12 +38,12 @@ var (
 		labels,
 	)
 
-		powerGauge = prometheus.NewGaugeVec(
+	powerGauge = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "shelly_power",
 			Help: "Shows current power in watts (per channel for multi-channel devices)"},
 		labels,
-		)
+	)
 
 	uptimeGauge = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
