@@ -62,7 +62,7 @@ func fetchDevices(config configuration) {
 				"address": device.IPAddress,
 				"type":    device.Type,
 			}
-			fmt.Println(err)
+			fmt.Printf("[ERROR] Device: %s (%s)\n%s\n", device.DisplayName, device.IPAddress, err)
 			errorCounter.With(labels).Inc()
 			continue
 		}
