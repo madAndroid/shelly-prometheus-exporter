@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -59,7 +60,6 @@ func getStatusResponseFromURL(config configuration, d device, url string) (*Stat
 
 	return statusResponse, nil
 }
-
 
 func urlHasOutputField(status StatusResponse) bool {
 	// In Go, bool fields default to false, so we can't distinguish missing from false.
@@ -139,14 +139,10 @@ func fetchDevices(config configuration) {
 			}
 
 			// Gen2: if no relays but APower present, emit relay state for each channel (2PM etc)
-			if len(statusResponse.Relays) == 0 && (statusResponse.APower != 0 || urlHasOutputField(statusResponse)) {
+			if len(statusResponse.Relays) == 0 && (statusResponse.APower != 0 || urlHasOutputField(*statusResponse)) {
 				// Omit -Channel-0 for single-channel 1pmPlus/1pmplus
-				var relayState float64
-				if urlHasOutputField(statusResponse) {
-					relayState = bool2float64(statusResponse.Output)
-				} else {
-					relayState = bool2float64(statusResponse.APower > 0)
-				}
+				// Gen2 fallback: treat APower > 0 as relay ON
+				relayState := bool2float64(statusResponse.APower > 0)
 				if len(device.getStatusURLs()) == 1 && (device.Type == "1pmplus" || device.Type == "1pmPlus") {
 					relayLabels := map[string]string{
 						"name":    device.DisplayName,
@@ -170,5 +166,6 @@ func fetchDevices(config configuration) {
 					relayStateGauge.With(relayLabels).Set(relayState)
 				}
 			}
+		}
 	}
 }
