@@ -57,9 +57,9 @@ func TestStatusResponse_MultiChannel2PM(t *testing.T) {
 	if status.Inputs[0].Event != "btn_down" || status.Inputs[1].Event != "btn_up" {
 		t.Errorf("Input events incorrect: %+v", status.Inputs)
 	}
-       if status.Temperature.Value != 55.5 {
-	       t.Errorf("Temperature = %f; want 55.5", status.Temperature.Value)
-       }
+	if status.Temperature.Value != 55.5 {
+		t.Errorf("Temperature = %f; want 55.5", status.Temperature.Value)
+	}
 	if status.Voltage != 230.0 {
 		t.Errorf("Voltage = %f; want 230.0", status.Voltage)
 	}

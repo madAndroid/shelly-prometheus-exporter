@@ -54,9 +54,9 @@ func TestStatusResponse_Shelly1PM(t *testing.T) {
 	if status.Inputs[0].Event != "btn_toggle" {
 		t.Errorf("Input event incorrect: %+v", status.Inputs[0])
 	}
-       if status.Temperature.Value != 40.1 {
-	       t.Errorf("Temperature = %f; want 40.1", status.Temperature.Value)
-       }
+	if status.Temperature.Value != 40.1 {
+		t.Errorf("Temperature = %f; want 40.1", status.Temperature.Value)
+	}
 	if status.Voltage != 231.5 {
 		t.Errorf("Voltage = %f; want 231.5", status.Voltage)
 	}

@@ -24,6 +24,7 @@ type StatusResponse struct {
 	FilesystemFree  int         `json:"fs_free"`
 	Voltage         float32     `json:"voltage"`
 	Uptime          int         `json:"uptime"`
+	APower          float64     `json:"apower"`
 }
 
 type Temperature struct {
