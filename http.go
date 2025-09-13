@@ -61,7 +61,7 @@ func getStatusResponseFromURL(config configuration, d device, url string) (*Stat
 	return statusResponse, nil
 }
 
-func urlHasOutputField(status StatusResponse) bool {
+func urlHasOutputField(_ StatusResponse) bool {
 	// In Go, bool fields default to false, so we can't distinguish missing from false.
 	// But for Gen2, if APower is present, Output is always present, so just return true if APower is present.
 	return true
@@ -82,6 +82,14 @@ func fetchDevices(config configuration) {
 		}
 		urls := device.getStatusURLs()
 		for idx, url := range urls {
+			// Determine friendly channel name if present
+			channelName := ""
+			if device.ChannelNames != nil {
+				key := fmt.Sprintf("%d", idx)
+				if name, ok := device.ChannelNames[key]; ok && name != "" {
+					channelName = name
+				}
+			}
 			if debug {
 				log.Printf("[DEBUG] Polling URL: %s", url)
 			}
@@ -99,11 +107,15 @@ func fetchDevices(config configuration) {
 			}
 
 			// Per-device/channel metrics
-			labels := map[string]string{
-				"name":    fmt.Sprintf("%s-Channel-%d", device.DisplayName, idx),
-				"address": fmt.Sprintf("%s-Channel-%d", device.IPAddress, idx),
-				"type":    device.Type,
+			labels := map[string]string{}
+			if channelName != "" {
+				labels["name"] = fmt.Sprintf("%s-%s", device.DisplayName, channelName)
+				labels["address"] = fmt.Sprintf("%s-%s", device.IPAddress, channelName)
+			} else {
+				labels["name"] = fmt.Sprintf("%s-Channel-%d", device.DisplayName, idx)
+				labels["address"] = fmt.Sprintf("%s-Channel-%d", device.IPAddress, idx)
 			}
+			labels["type"] = device.Type
 			// Use .Value if set (Gen1), else .TC (Gen2)
 			temp := float64(0)
 			if statusResponse.Temperature.Valid {
@@ -129,11 +141,21 @@ func fetchDevices(config configuration) {
 				relayStateGauge.With(relayLabels).Set(bool2float64(statusResponse.Relays[0].Ison))
 			} else {
 				for i, relay := range statusResponse.Relays {
-					relayLabels := map[string]string{
-						"name":    fmt.Sprintf("%s-Relay-%d", device.DisplayName, i),
-						"address": fmt.Sprintf("%s-Relay-%d", device.IPAddress, i),
-						"type":    device.Type,
+					relayLabels := map[string]string{}
+					if device.ChannelNames != nil {
+						key := fmt.Sprintf("%d", i)
+						if name, ok := device.ChannelNames[key]; ok && name != "" {
+							relayLabels["name"] = fmt.Sprintf("%s-%s", device.DisplayName, name)
+							relayLabels["address"] = fmt.Sprintf("%s-%s", device.IPAddress, name)
+						} else {
+							relayLabels["name"] = fmt.Sprintf("%s-Relay-%d", device.DisplayName, i)
+							relayLabels["address"] = fmt.Sprintf("%s-Relay-%d", device.IPAddress, i)
+						}
+					} else {
+						relayLabels["name"] = fmt.Sprintf("%s-Relay-%d", device.DisplayName, i)
+						relayLabels["address"] = fmt.Sprintf("%s-Relay-%d", device.IPAddress, i)
 					}
+					relayLabels["type"] = device.Type
 					relayStateGauge.With(relayLabels).Set(bool2float64(relay.Ison))
 				}
 			}
@@ -158,11 +180,21 @@ func fetchDevices(config configuration) {
 					}
 					relayStateGauge.With(relayLabels).Set(relayState)
 				} else {
-					relayLabels := map[string]string{
-						"name":    fmt.Sprintf("%s-Channel-%d", device.DisplayName, idx),
-						"address": fmt.Sprintf("%s-Channel-%d", device.IPAddress, idx),
-						"type":    device.Type,
+					relayLabels := map[string]string{}
+					if device.ChannelNames != nil {
+						key := fmt.Sprintf("%d", idx)
+						if name, ok := device.ChannelNames[key]; ok && name != "" {
+							relayLabels["name"] = fmt.Sprintf("%s-%s", device.DisplayName, name)
+							relayLabels["address"] = fmt.Sprintf("%s-%s", device.IPAddress, name)
+						} else {
+							relayLabels["name"] = fmt.Sprintf("%s-Channel-%d", device.DisplayName, idx)
+							relayLabels["address"] = fmt.Sprintf("%s-Channel-%d", device.IPAddress, idx)
+						}
+					} else {
+						relayLabels["name"] = fmt.Sprintf("%s-Channel-%d", device.DisplayName, idx)
+						relayLabels["address"] = fmt.Sprintf("%s-Channel-%d", device.IPAddress, idx)
 					}
+					relayLabels["type"] = device.Type
 					relayStateGauge.With(relayLabels).Set(relayState)
 				}
 			}
@@ -178,11 +210,21 @@ func fetchDevices(config configuration) {
 				powerGauge.With(meterLabels).Set(float64(statusResponse.Meters[0].Power))
 			} else if len(statusResponse.Meters) > 1 {
 				for i, meter := range statusResponse.Meters {
-					meterLabels := map[string]string{
-						"name":    fmt.Sprintf("%s-Meter-%d", device.DisplayName, i),
-						"address": fmt.Sprintf("%s-Meter-%d", device.IPAddress, i),
-						"type":    device.Type,
+					meterLabels := map[string]string{}
+					if device.ChannelNames != nil {
+						key := fmt.Sprintf("%d", i)
+						if name, ok := device.ChannelNames[key]; ok && name != "" {
+							meterLabels["name"] = fmt.Sprintf("%s-%s", device.DisplayName, name)
+							meterLabels["address"] = fmt.Sprintf("%s-%s", device.IPAddress, name)
+						} else {
+							meterLabels["name"] = fmt.Sprintf("%s-Meter-%d", device.DisplayName, i)
+							meterLabels["address"] = fmt.Sprintf("%s-Meter-%d", device.IPAddress, i)
+						}
+					} else {
+						meterLabels["name"] = fmt.Sprintf("%s-Meter-%d", device.DisplayName, i)
+						meterLabels["address"] = fmt.Sprintf("%s-Meter-%d", device.IPAddress, i)
 					}
+					meterLabels["type"] = device.Type
 					powerGauge.With(meterLabels).Set(float64(meter.Power))
 				}
 			}
@@ -203,11 +245,21 @@ func fetchDevices(config configuration) {
 						"type":    device.Type,
 					}
 				} else {
-					meterLabels = map[string]string{
-						"name":    fmt.Sprintf("%s-Channel-%d", device.DisplayName, idx),
-						"address": fmt.Sprintf("%s-Channel-%d", device.IPAddress, idx),
-						"type":    device.Type,
+					meterLabels = map[string]string{}
+					if device.ChannelNames != nil {
+						key := fmt.Sprintf("%d", idx)
+						if name, ok := device.ChannelNames[key]; ok && name != "" {
+							meterLabels["name"] = fmt.Sprintf("%s-%s", device.DisplayName, name)
+							meterLabels["address"] = fmt.Sprintf("%s-%s", device.IPAddress, name)
+						} else {
+							meterLabels["name"] = fmt.Sprintf("%s-Channel-%d", device.DisplayName, idx)
+							meterLabels["address"] = fmt.Sprintf("%s-Channel-%d", device.IPAddress, idx)
+						}
+					} else {
+						meterLabels["name"] = fmt.Sprintf("%s-Channel-%d", device.DisplayName, idx)
+						meterLabels["address"] = fmt.Sprintf("%s-Channel-%d", device.IPAddress, idx)
 					}
+					meterLabels["type"] = device.Type
 				}
 				powerGauge.With(meterLabels).Set(statusResponse.APower)
 			}

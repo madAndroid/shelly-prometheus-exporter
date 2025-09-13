@@ -16,12 +16,13 @@ type configuration struct {
 }
 
 type device struct {
-	DisplayName string
-	Username    string
-	Password    string
-	IPAddress   string
-	MACAddress  string
-	Type        string
+	DisplayName  string
+	Username     string
+	Password     string
+	IPAddress    string
+	MACAddress   string
+	Type         string
+	ChannelNames map[string]string // Optional: channel index to friendly name
 }
 
 // getStatusURLs returns a list of status endpoints to poll for a device.
@@ -69,7 +70,7 @@ func getConfig() configuration {
 
 	err := viper.ReadInConfig()
 	if err != nil {
-		log.Fatal(fmt.Errorf("fatal error in config file: %s \n", err))
+		log.Fatal(fmt.Errorf("fatal error in config file: %s", err))
 	}
 
 	var config configuration
