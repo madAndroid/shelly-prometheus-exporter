@@ -42,37 +42,49 @@ func bool2float64(b bool) float64 {
 
 func fetchDevices(config configuration) {
 	for _, device := range config.Devices {
-		labels := map[string]string{
-			"name":    device.DisplayName,
-			"address": device.IPAddress,
-			"type":    device.Type,
-		}
-
 		statusResponse, err := getStatusResponseFromDevice(config, device)
 		if err != nil {
+			labels := map[string]string{
+				"name":    device.DisplayName,
+				"address": device.IPAddress,
+				"type":    device.Type,
+			}
 			fmt.Println(err)
 			errorCounter.With(labels).Inc()
 			continue
 		}
 
+		// Per-device metrics
+		labels := map[string]string{
+			"name":    device.DisplayName,
+			"address": device.IPAddress,
+			"type":    device.Type,
+		}
 		temperatureGauge.With(labels).Set(float64(statusResponse.Temperature))
 		isOvertemperatureGauge.With(labels).Set(bool2float64(statusResponse.Overtemperature))
 		voltageGauge.With(labels).Set(float64(statusResponse.Voltage))
 		uptimeGauge.With(labels).Set(float64(statusResponse.Uptime))
 		isUpdateAvailableGauge.With(labels).Set(bool2float64(statusResponse.HasUpdate))
-		for _, relayMetric := range statusResponse.Relays {
-			relayStateGauge.With(labels).Set(bool2float64(relayMetric.State))
-		}
-		for _, meterMetric := range statusResponse.Meters {
-			powerGauge.With(labels).Set(float64(meterMetric.Power))
-		}
-		for i, eMeterMetric := range statusResponse.EMeters {
-			labels = map[string]string{
-				"name":    device.DisplayName + fmt.Sprintf("-Channel-%d", i),
-				"address": device.IPAddress + fmt.Sprintf("-Channel-%d", i),
+
+		// Per-relay metrics (Shelly 2PM has 2 relays)
+		for i, relay := range statusResponse.Relays {
+			relayLabels := map[string]string{
+				"name":    fmt.Sprintf("%s-Relay-%d", device.DisplayName, i),
+				"address": fmt.Sprintf("%s-Relay-%d", device.IPAddress, i),
 				"type":    device.Type,
 			}
-			powerGauge.With(labels).Set(float64(eMeterMetric.Power))
+			relayStateGauge.With(relayLabels).Set(bool2float64(relay.Ison))
 		}
+
+		// Per-meter metrics (Shelly 2PM has 2 meters)
+		for i, meter := range statusResponse.Meters {
+			meterLabels := map[string]string{
+				"name":    fmt.Sprintf("%s-Meter-%d", device.DisplayName, i),
+				"address": fmt.Sprintf("%s-Meter-%d", device.IPAddress, i),
+				"type":    device.Type,
+			}
+			powerGauge.With(meterLabels).Set(float64(meter.Power))
+		}
+		// Add more metrics as needed for new fields (inputs, tmp, etc.)
 	}
 }

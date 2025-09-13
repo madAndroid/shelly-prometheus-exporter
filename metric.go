@@ -5,7 +5,7 @@ import (
 )
 
 var (
-	labels = []string{"name", "address", "type"}
+	labels = []string{"name", "address", "type"} // For per-device and per-channel metrics
 
 	errorCounter = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
@@ -38,12 +38,12 @@ var (
 		labels,
 	)
 
-	powerGauge = prometheus.NewGaugeVec(
+		powerGauge = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "shelly_power",
-			Help: "Shows current power in watts"},
+			Help: "Shows current power in watts (per channel for multi-channel devices)"},
 		labels,
-	)
+		)
 
 	uptimeGauge = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
@@ -68,12 +68,12 @@ var (
 )
 
 func registerMetrics() {
-	prometheus.Register(errorCounter)
-	prometheus.Register(temperatureGauge)
-	prometheus.Register(isOvertemperatureGauge)
-	prometheus.Register(voltageGauge)
-	prometheus.Register(powerGauge)
-	prometheus.Register(uptimeGauge)
-	prometheus.Register(relayStateGauge)
-	prometheus.Register(isUpdateAvailableGauge)
+	prometheus.MustRegister(errorCounter)
+	prometheus.MustRegister(temperatureGauge)
+	prometheus.MustRegister(isOvertemperatureGauge)
+	prometheus.MustRegister(voltageGauge)
+	prometheus.MustRegister(powerGauge)
+	prometheus.MustRegister(uptimeGauge)
+	prometheus.MustRegister(relayStateGauge)
+	prometheus.MustRegister(isUpdateAvailableGauge)
 }
