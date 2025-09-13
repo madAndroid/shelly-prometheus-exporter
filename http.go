@@ -113,13 +113,43 @@ func fetchDevices(config configuration) {
 			uptimeGauge.With(labels).Set(float64(statusResponse.Uptime))
 			isUpdateAvailableGauge.With(labels).Set(bool2float64(statusResponse.HasUpdate))
 
-			for i, relay := range statusResponse.Relays {
+			// For single-relay devices, omit -Relay-0 suffix
+			if len(statusResponse.Relays) == 1 {
 				relayLabels := map[string]string{
-					"name":    fmt.Sprintf("%s-Relay-%d", device.DisplayName, i),
-					"address": fmt.Sprintf("%s-Relay-%d", device.IPAddress, i),
+					"name":    device.DisplayName,
+					"address": device.IPAddress,
 					"type":    device.Type,
 				}
-				relayStateGauge.With(relayLabels).Set(bool2float64(relay.Ison))
+				relayStateGauge.With(relayLabels).Set(bool2float64(statusResponse.Relays[0].Ison))
+			} else {
+				for i, relay := range statusResponse.Relays {
+					relayLabels := map[string]string{
+						"name":    fmt.Sprintf("%s-Relay-%d", device.DisplayName, i),
+						"address": fmt.Sprintf("%s-Relay-%d", device.IPAddress, i),
+						"type":    device.Type,
+					}
+					relayStateGauge.With(relayLabels).Set(bool2float64(relay.Ison))
+				}
+			}
+			// Gen2: if no relays but APower present, emit relay state for each channel (2PM etc)
+			if len(statusResponse.Relays) == 0 && statusResponse.APower != 0 {
+				if len(device.getStatusURLs()) == 1 {
+					// Only one channel, omit -Channel-0
+					relayLabels := map[string]string{
+						"name":    device.DisplayName,
+						"address": device.IPAddress,
+						"type":    device.Type,
+					}
+					// Assume output is ON if APower > 0
+					relayStateGauge.With(relayLabels).Set(bool2float64(statusResponse.APower > 0))
+				} else {
+					relayLabels := map[string]string{
+						"name":    fmt.Sprintf("%s-Channel-%d", device.DisplayName, idx),
+						"address": fmt.Sprintf("%s-Channel-%d", device.IPAddress, idx),
+						"type":    device.Type,
+					}
+					relayStateGauge.With(relayLabels).Set(bool2float64(statusResponse.APower > 0))
+				}
 			}
 			// Gen1: emit per-meter power metrics, but for single-meter devices (e.g., 1PM), omit the -Meter-0 suffix
 			if len(statusResponse.Meters) == 1 && (device.Type == "1pm" || device.Type == "1PM") {
