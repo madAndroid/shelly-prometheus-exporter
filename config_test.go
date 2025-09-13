@@ -61,11 +61,11 @@ devices:
 		t.Error("given config file does not match expected config")
 	}
 
-	if givenConfig.Devices[0].getStatusURL() != "http://shellyswitch25-ABC12345/status" {
-		t.Errorf("getStatusURL() = %s; want http://shellyswitch25-ABC12345/status", givenConfig.Devices[0].getStatusURL())
+	if urls := givenConfig.Devices[0].getStatusURLs(); len(urls) == 0 || urls[0] != "http://shellyswitch25-ABC12345/status" {
+		t.Errorf("getStatusURLs()[0] = %v; want [http://shellyswitch25-ABC12345/status]", urls)
 	}
 
-	if givenConfig.Devices[1].getStatusURL() != "http://shellyswitch25-123DEF/status" {
-		t.Errorf("getStatusURL() = %s; want http://shellyswitch25-123DEF/status", givenConfig.Devices[1].getStatusURL())
+	if urls := givenConfig.Devices[1].getStatusURLs(); len(urls) == 0 || urls[0] != "http://shellyswitch25-123DEF/status" {
+		t.Errorf("getStatusURLs()[0] = %v; want [http://shellyswitch25-123DEF/status]", urls)
 	}
 }
