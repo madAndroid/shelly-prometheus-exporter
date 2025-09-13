@@ -141,10 +141,20 @@ func fetchDevices(config configuration) {
 			}
 			// Gen2: emit per-channel power metrics using APower if present and no meters
 			if len(statusResponse.Meters) == 0 && statusResponse.APower != 0 {
-				meterLabels := map[string]string{
-					"name":    fmt.Sprintf("%s-Channel-%d", device.DisplayName, idx),
-					"address": fmt.Sprintf("%s-Channel-%d", device.IPAddress, idx),
-					"type":    device.Type,
+				var meterLabels map[string]string
+				if len(device.getStatusURLs()) == 1 {
+					// Only one channel, omit -Channel-0
+					meterLabels = map[string]string{
+						"name":    device.DisplayName,
+						"address": device.IPAddress,
+						"type":    device.Type,
+					}
+				} else {
+					meterLabels = map[string]string{
+						"name":    fmt.Sprintf("%s-Channel-%d", device.DisplayName, idx),
+						"address": fmt.Sprintf("%s-Channel-%d", device.IPAddress, idx),
+						"type":    device.Type,
+					}
 				}
 				powerGauge.With(meterLabels).Set(statusResponse.APower)
 			}
