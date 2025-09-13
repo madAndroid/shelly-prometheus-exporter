@@ -11,54 +11,54 @@ import (
 
 // getStatusResponseFromURL fetches and parses a status response from a given URL for a device.
 func getStatusResponseFromURL(config configuration, d device, url string) (*StatusResponse, error) {
-       httpClient := &http.Client{Timeout: config.RequestTimeout}
+	httpClient := &http.Client{Timeout: config.RequestTimeout}
 
-       request, err := http.NewRequest("GET", url, nil)
-       if err != nil {
-	       return nil, fmt.Errorf("could not create request: %v", err)
-       }
+	request, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("could not create request: %v", err)
+	}
 
-       if d.Username != "" && d.Password != "" {
-	       request.SetBasicAuth(d.Username, d.Password)
-       }
+	if d.Username != "" && d.Password != "" {
+		request.SetBasicAuth(d.Username, d.Password)
+	}
 
-       debug := os.Getenv("DEBUG") != ""
-       response, err := httpClient.Do(request)
-       if err != nil {
-	       if debug {
-		       log.Printf("[DEBUG] Device: %s (%s) HTTP request error: %v\n", d.DisplayName, d.IPAddress, err)
-	       }
-	       return nil, fmt.Errorf("error while doing the request for device '%s': %v", d.DisplayName, err)
-       }
-       if debug {
-	       log.Printf("[DEBUG] Device: %s (%s) HTTP %d\nHeaders: %v\n", d.DisplayName, d.IPAddress, response.StatusCode, response.Header)
-       }
-       defer response.Body.Close()
+	debug := os.Getenv("DEBUG") != ""
+	response, err := httpClient.Do(request)
+	if err != nil {
+		if debug {
+			log.Printf("[DEBUG] Device: %s (%s) HTTP request error: %v\n", d.DisplayName, d.IPAddress, err)
+		}
+		return nil, fmt.Errorf("error while doing the request for device '%s': %v", d.DisplayName, err)
+	}
+	if debug {
+		log.Printf("[DEBUG] Device: %s (%s) HTTP %d\nHeaders: %v\n", d.DisplayName, d.IPAddress, response.StatusCode, response.Header)
+	}
+	defer response.Body.Close()
 
-       if response.StatusCode != http.StatusOK {
-	       bodyBytes := make([]byte, 1024)
-	       n, _ := response.Body.Read(bodyBytes)
-	       body := string(bodyBytes[:n])
-	       return nil, fmt.Errorf("device '%s' returned HTTP %d: %s", d.DisplayName, response.StatusCode, body)
-       }
+	if response.StatusCode != http.StatusOK {
+		bodyBytes := make([]byte, 1024)
+		n, _ := response.Body.Read(bodyBytes)
+		body := string(bodyBytes[:n])
+		return nil, fmt.Errorf("device '%s' returned HTTP %d: %s", d.DisplayName, response.StatusCode, body)
+	}
 
-       bodyBytes, err := io.ReadAll(response.Body)
-       if err != nil {
-	       return nil, fmt.Errorf("error reading response body for device '%s': %v", d.DisplayName, err)
-       }
+	bodyBytes, err := io.ReadAll(response.Body)
+	if err != nil {
+		return nil, fmt.Errorf("error reading response body for device '%s': %v", d.DisplayName, err)
+	}
 
-       // Log the raw response body for debugging
-       if debug {
-	       log.Printf("[DEBUG] Device: %s (%s) raw response:\n%s\n", d.DisplayName, d.IPAddress, string(bodyBytes))
-       }
+	// Log the raw response body for debugging
+	if debug {
+		log.Printf("[DEBUG] Device: %s (%s) raw response:\n%s\n", d.DisplayName, d.IPAddress, string(bodyBytes))
+	}
 
-       statusResponse := new(StatusResponse)
-       err = json.Unmarshal(bodyBytes, statusResponse)
-       if err != nil {
-	       return nil, fmt.Errorf("error decoding JSON for device '%s': %v\nRaw body: %s", d.DisplayName, err, string(bodyBytes))
-       }
+	statusResponse := new(StatusResponse)
+	err = json.Unmarshal(bodyBytes, statusResponse)
+	if err != nil {
+		return nil, fmt.Errorf("error decoding JSON for device '%s': %v\nRaw body: %s", d.DisplayName, err, string(bodyBytes))
+	}
 
-       return statusResponse, nil
+	return statusResponse, nil
 }
 
 func bool2float64(b bool) float64 {
@@ -69,57 +69,66 @@ func bool2float64(b bool) float64 {
 }
 
 func fetchDevices(config configuration) {
-       debug := os.Getenv("DEBUG") != ""
-       for _, device := range config.Devices {
-	       if debug {
-		       log.Printf("[DEBUG] Polling device: %s (%s)", device.DisplayName, device.IPAddress)
-	       }
-	       urls := device.getStatusURLs()
-	       for idx, url := range urls {
-		       if debug {
-			       log.Printf("[DEBUG] Polling URL: %s", url)
-		       }
-		       // For Gen2, treat each channel as a separate device metric
-		       statusResponse, err := getStatusResponseFromURL(config, device, url)
-		       if err != nil {
-			       labels := map[string]string{
-				       "name":    device.DisplayName,
-				       "address": device.IPAddress,
-				       "type":    device.Type,
-			       }
-			       log.Printf("[ERROR] Device: %s (%s)\n%v\n", device.DisplayName, device.IPAddress, err)
-			       errorCounter.With(labels).Inc()
-			       continue
-		       }
+	debug := os.Getenv("DEBUG") != ""
+	for _, device := range config.Devices {
+		if debug {
+			log.Printf("[DEBUG] Polling device: %s (%s)", device.DisplayName, device.IPAddress)
+		}
+		urls := device.getStatusURLs()
+		for idx, url := range urls {
+			if debug {
+				log.Printf("[DEBUG] Polling URL: %s", url)
+			}
+			// For Gen2, treat each channel as a separate device metric
+			statusResponse, err := getStatusResponseFromURL(config, device, url)
+			if err != nil {
+				labels := map[string]string{
+					"name":    device.DisplayName,
+					"address": device.IPAddress,
+					"type":    device.Type,
+				}
+				log.Printf("[ERROR] Device: %s (%s)\n%v\n", device.DisplayName, device.IPAddress, err)
+				errorCounter.With(labels).Inc()
+				continue
+			}
 
-		       // Per-device/channel metrics
-		       labels := map[string]string{
-			       "name":    fmt.Sprintf("%s-Channel-%d", device.DisplayName, idx),
-			       "address": fmt.Sprintf("%s-Channel-%d", device.IPAddress, idx),
-			       "type":    device.Type,
-		       }
-		       temperatureGauge.With(labels).Set(float64(statusResponse.Temperature))
-		       isOvertemperatureGauge.With(labels).Set(bool2float64(statusResponse.Overtemperature))
-		       voltageGauge.With(labels).Set(float64(statusResponse.Voltage))
-		       uptimeGauge.With(labels).Set(float64(statusResponse.Uptime))
-		       isUpdateAvailableGauge.With(labels).Set(bool2float64(statusResponse.HasUpdate))
+			// Per-device/channel metrics
+			labels := map[string]string{
+				"name":    fmt.Sprintf("%s-Channel-%d", device.DisplayName, idx),
+				"address": fmt.Sprintf("%s-Channel-%d", device.IPAddress, idx),
+				"type":    device.Type,
+			}
+			// Use .Value if set (Gen1), else .TC (Gen2)
+			temp := float64(0)
+			if statusResponse.Temperature.Valid {
+				if statusResponse.Temperature.Value != 0 {
+					temp = float64(statusResponse.Temperature.Value)
+				} else if statusResponse.Temperature.TC != 0 {
+					temp = float64(statusResponse.Temperature.TC)
+				}
+			}
+			temperatureGauge.With(labels).Set(temp)
+			isOvertemperatureGauge.With(labels).Set(bool2float64(statusResponse.Overtemperature))
+			voltageGauge.With(labels).Set(float64(statusResponse.Voltage))
+			uptimeGauge.With(labels).Set(float64(statusResponse.Uptime))
+			isUpdateAvailableGauge.With(labels).Set(bool2float64(statusResponse.HasUpdate))
 
-		       for i, relay := range statusResponse.Relays {
-			       relayLabels := map[string]string{
-				       "name":    fmt.Sprintf("%s-Relay-%d", device.DisplayName, i),
-				       "address": fmt.Sprintf("%s-Relay-%d", device.IPAddress, i),
-				       "type":    device.Type,
-			       }
-			       relayStateGauge.With(relayLabels).Set(bool2float64(relay.Ison))
-		       }
-		       for i, meter := range statusResponse.Meters {
-			       meterLabels := map[string]string{
-				       "name":    fmt.Sprintf("%s-Meter-%d", device.DisplayName, i),
-				       "address": fmt.Sprintf("%s-Meter-%d", device.IPAddress, i),
-				       "type":    device.Type,
-			       }
-			       powerGauge.With(meterLabels).Set(float64(meter.Power))
-		       }
-	       }
-       }
+			for i, relay := range statusResponse.Relays {
+				relayLabels := map[string]string{
+					"name":    fmt.Sprintf("%s-Relay-%d", device.DisplayName, i),
+					"address": fmt.Sprintf("%s-Relay-%d", device.IPAddress, i),
+					"type":    device.Type,
+				}
+				relayStateGauge.With(relayLabels).Set(bool2float64(relay.Ison))
+			}
+			for i, meter := range statusResponse.Meters {
+				meterLabels := map[string]string{
+					"name":    fmt.Sprintf("%s-Meter-%d", device.DisplayName, i),
+					"address": fmt.Sprintf("%s-Meter-%d", device.IPAddress, i),
+					"type":    device.Type,
+				}
+				powerGauge.With(meterLabels).Set(float64(meter.Power))
+			}
+		}
+	}
 }

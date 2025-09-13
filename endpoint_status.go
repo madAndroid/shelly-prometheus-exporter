@@ -5,25 +5,25 @@ import (
 )
 
 type StatusResponse struct {
-	WiFiStatus      WiFi            `json:"wifi_sta"`
-	Cloud           Cloud           `json:"cloud"`
-	MQTT            MQTT            `json:"mqtt"`
-	Relays          []Relay         `json:"relays"`
-	Meters          []Meter         `json:"meters"`
-	Inputs          []Input         `json:"inputs"`
-	Temperature     Temperature     `json:"temperature"`
-	Overtemperature bool            `json:"overtemperature"`
-	Tmp             Tmp             `json:"tmp"`
-	HasUpdate       bool            `json:"has_update"`
-	Update          Update          `json:"update"`
-	MACAddress      string          `json:"mac"`
-	Serial          int             `json:"serial"`
-	MemoryTotal     int             `json:"ram_total"`
-	MemoryFree      int             `json:"ram_free"`
-	FilesystemSize  int             `json:"fs_size"`
-	FilesystemFree  int             `json:"fs_free"`
-	Voltage         float32         `json:"voltage"`
-	Uptime          int             `json:"uptime"`
+	WiFiStatus      WiFi        `json:"wifi_sta"`
+	Cloud           Cloud       `json:"cloud"`
+	MQTT            MQTT        `json:"mqtt"`
+	Relays          []Relay     `json:"relays"`
+	Meters          []Meter     `json:"meters"`
+	Inputs          []Input     `json:"inputs"`
+	Temperature     Temperature `json:"temperature"`
+	Overtemperature bool        `json:"overtemperature"`
+	Tmp             Tmp         `json:"tmp"`
+	HasUpdate       bool        `json:"has_update"`
+	Update          Update      `json:"update"`
+	MACAddress      string      `json:"mac"`
+	Serial          int         `json:"serial"`
+	MemoryTotal     int         `json:"ram_total"`
+	MemoryFree      int         `json:"ram_free"`
+	FilesystemSize  int         `json:"fs_size"`
+	FilesystemFree  int         `json:"fs_free"`
+	Voltage         float32     `json:"voltage"`
+	Uptime          int         `json:"uptime"`
 }
 
 type Temperature struct {

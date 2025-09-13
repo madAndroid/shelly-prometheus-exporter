@@ -1,23 +1,11 @@
+package main
 
 import (
-	package main
-
-	import (
-		"encoding/json"
-		"testing"
-	)
-
-	type Gen2SwitchStatus struct {
-		ID          int         `json:"id"`
-		Output      bool        `json:"output"`
-		APower      float64     `json:"apower"`
-		Voltage     float64     `json:"voltage"`
-		Uptime      int         `json:"uptime"`
-		Temperature Temperature `json:"temperature"`
-	}
+	"encoding/json"
 	"testing"
 )
 
+type Gen2SwitchStatus struct {
 	ID          int         `json:"id"`
 	Output      bool        `json:"output"`
 	APower      float64     `json:"apower"`
@@ -53,7 +41,7 @@ func TestParseGen2SwitchGetStatusStruct(t *testing.T) {
 	if status.Uptime != 6423051 {
 		t.Errorf("uptime = %v; want 6423051", status.Uptime)
 	}
-       if !status.Temperature.Valid || float32(status.Temperature.TC) != 38.06 {
-	       t.Errorf("temperature = %+v; want valid and tC=38.06", status.Temperature)
-       }
+	if !status.Temperature.Valid || float32(status.Temperature.TC) != 38.06 {
+		t.Errorf("temperature = %+v; want valid and tC=38.06", status.Temperature)
+	}
 }

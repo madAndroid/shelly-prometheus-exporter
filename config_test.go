@@ -2,10 +2,11 @@ package main
 
 import (
 	"bytes"
-	"github.com/spf13/viper"
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/spf13/viper"
 )
 
 func TestReadConfig(t *testing.T) {
