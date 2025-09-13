@@ -38,6 +38,9 @@ func getStatusResponseFromDevice(config configuration, d device) (*StatusRespons
 		return nil, fmt.Errorf("error reading response body for device '%s': %v", d.DisplayName, err)
 	}
 
+	// Log the raw response body for debugging
+	log.Printf("[DEBUG] Device: %s (%s) raw response:\n%s\n", d.DisplayName, d.IPAddress, string(bodyBytes))
+
 	statusResponse := new(StatusResponse)
 	err = json.Unmarshal(bodyBytes, statusResponse)
 	if err != nil {
