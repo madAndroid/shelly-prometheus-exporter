@@ -22,8 +22,10 @@ func getStatusResponseFromDevice(config configuration, d device) (*StatusRespons
 
 	response, err := httpClient.Do(request)
 	if err != nil {
+		log.Printf("[DEBUG] Device: %s (%s) HTTP request error: %v\n", d.DisplayName, d.IPAddress, err)
 		return nil, fmt.Errorf("error while doing the request for device '%s': %v", d.DisplayName, err)
 	}
+	log.Printf("[DEBUG] Device: %s (%s) HTTP %d\nHeaders: %v\n", d.DisplayName, d.IPAddress, response.StatusCode, response.Header)
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
