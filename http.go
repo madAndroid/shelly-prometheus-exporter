@@ -61,7 +61,7 @@ func getStatusResponseFromURL(config configuration, d device, url string) (*Stat
 	return statusResponse, nil
 }
 
-// Helper to check if output field is present (for Gen2 relay state)
+
 func urlHasOutputField(status StatusResponse) bool {
 	// In Go, bool fields default to false, so we can't distinguish missing from false.
 	// But for Gen2, if APower is present, Output is always present, so just return true if APower is present.
@@ -171,57 +171,5 @@ func fetchDevices(config configuration) {
 					relayStateGauge.With(relayLabels).Set(relayState)
 				}
 			}
-		}
-
-		// Helper to check if output field is present (for Gen2 relay state)
-		func urlHasOutputField(status StatusResponse) bool {
-			// In Go, bool fields default to false, so we can't distinguish missing from false.
-			// But for Gen2, if APower is present, Output is always present, so just return true if APower is present.
-			return true
-		}
-
-		// Gen1: emit per-meter power metrics, but for single-meter devices (e.g., 1PM, 1PMPlus), omit the -Meter-0 suffix
-		if len(statusResponse.Meters) == 1 && (device.Type == "1pm" || device.Type == "1PM" || device.Type == "1pmplus" || device.Type == "1pmPlus") {
-			meterLabels := map[string]string{
-				"name":    device.DisplayName,
-				"address": device.IPAddress,
-				"type":    device.Type,
-			}
-			powerGauge.With(meterLabels).Set(float64(statusResponse.Meters[0].Power))
-		} else {
-			for i, meter := range statusResponse.Meters {
-				meterLabels := map[string]string{
-					"name":    fmt.Sprintf("%s-Meter-%d", device.DisplayName, i),
-					"address": fmt.Sprintf("%s-Meter-%d", device.IPAddress, i),
-					"type":    device.Type,
-				}
-				powerGauge.With(meterLabels).Set(float64(meter.Power))
-			}
-		}
-		// Gen2: emit per-channel power metrics using APower if present and no meters
-		if len(statusResponse.Meters) == 0 && statusResponse.APower != 0 {
-			var meterLabels map[string]string
-			// Omit -Channel-0 for single-channel 1pmPlus/1pmplus
-			if len(device.getStatusURLs()) == 1 && (device.Type == "1pmplus" || device.Type == "1pmPlus") {
-				meterLabels = map[string]string{
-					"name":    device.DisplayName,
-					"address": device.IPAddress,
-					"type":    device.Type,
-				}
-			} else if len(device.getStatusURLs()) == 1 {
-				meterLabels = map[string]string{
-					"name":    device.DisplayName,
-					"address": device.IPAddress,
-					"type":    device.Type,
-				}
-			} else {
-				meterLabels = map[string]string{
-					"name":    fmt.Sprintf("%s-Channel-%d", device.DisplayName, idx),
-					"address": fmt.Sprintf("%s-Channel-%d", device.IPAddress, idx),
-					"type":    device.Type,
-				}
-			}
-			powerGauge.With(meterLabels).Set(statusResponse.APower)
-		}
 	}
 }
