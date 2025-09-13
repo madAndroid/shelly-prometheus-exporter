@@ -151,8 +151,8 @@ func fetchDevices(config configuration) {
 					relayStateGauge.With(relayLabels).Set(bool2float64(statusResponse.APower > 0))
 				}
 			}
-			// Gen1: emit per-meter power metrics, but for single-meter devices (e.g., 1PM), omit the -Meter-0 suffix
-			if len(statusResponse.Meters) == 1 && (device.Type == "1pm" || device.Type == "1PM") {
+			// Gen1: emit per-meter power metrics, but for single-meter devices (e.g., 1PM, 1PMPlus), omit the -Meter-0 suffix
+			if len(statusResponse.Meters) == 1 && (device.Type == "1pm" || device.Type == "1PM" || device.Type == "1pmplus" || device.Type == "1pmPlus") {
 				meterLabels := map[string]string{
 					"name":    device.DisplayName,
 					"address": device.IPAddress,
@@ -172,8 +172,14 @@ func fetchDevices(config configuration) {
 			// Gen2: emit per-channel power metrics using APower if present and no meters
 			if len(statusResponse.Meters) == 0 && statusResponse.APower != 0 {
 				var meterLabels map[string]string
-				if len(device.getStatusURLs()) == 1 {
-					// Only one channel, omit -Channel-0
+				// Omit -Channel-0 for single-channel 1pmPlus/1pmplus
+				if len(device.getStatusURLs()) == 1 && (device.Type == "1pmplus" || device.Type == "1pmPlus") {
+					meterLabels = map[string]string{
+						"name":    device.DisplayName,
+						"address": device.IPAddress,
+						"type":    device.Type,
+					}
+				} else if len(device.getStatusURLs()) == 1 {
 					meterLabels = map[string]string{
 						"name":    device.DisplayName,
 						"address": device.IPAddress,
