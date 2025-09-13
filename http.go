@@ -121,14 +121,23 @@ func fetchDevices(config configuration) {
 				}
 				relayStateGauge.With(relayLabels).Set(bool2float64(relay.Ison))
 			}
-			// Gen1: emit per-meter power metrics
-			for i, meter := range statusResponse.Meters {
+			// Gen1: emit per-meter power metrics, but for single-meter devices (e.g., 1PM), omit the -Meter-0 suffix
+			if len(statusResponse.Meters) == 1 && (device.Type == "1pm" || device.Type == "1PM") {
 				meterLabels := map[string]string{
-					"name":    fmt.Sprintf("%s-Meter-%d", device.DisplayName, i),
-					"address": fmt.Sprintf("%s-Meter-%d", device.IPAddress, i),
+					"name":    device.DisplayName,
+					"address": device.IPAddress,
 					"type":    device.Type,
 				}
-				powerGauge.With(meterLabels).Set(float64(meter.Power))
+				powerGauge.With(meterLabels).Set(float64(statusResponse.Meters[0].Power))
+			} else {
+				for i, meter := range statusResponse.Meters {
+					meterLabels := map[string]string{
+						"name":    fmt.Sprintf("%s-Meter-%d", device.DisplayName, i),
+						"address": fmt.Sprintf("%s-Meter-%d", device.IPAddress, i),
+						"type":    device.Type,
+					}
+					powerGauge.With(meterLabels).Set(float64(meter.Power))
+				}
 			}
 			// Gen2: emit per-channel power metrics using APower if present and no meters
 			if len(statusResponse.Meters) == 0 && statusResponse.APower != 0 {
