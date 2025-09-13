@@ -121,9 +121,9 @@ func TestStatusResponseToStruct(t *testing.T) {
 		t.Errorf("could not unmarshal status endpoint content: %v", err)
 	}
 
-	if status.Temperature != 60.49 {
-		t.Errorf("Temperature = %f; want 60.49", status.Temperature)
-	}
+  if !status.Temperature.Valid || (status.Temperature.Value != 60.49 && status.Temperature.TC != 60.49) {
+    t.Errorf("Temperature = %+v; want 60.49", status.Temperature)
+  }
 
 	if status.Overtemperature != false {
 		t.Errorf("Overtemperature = %t; want false", status.Overtemperature)
