@@ -25,6 +25,7 @@ type StatusResponse struct {
 	Voltage         float32     `json:"voltage"`
 	Uptime          int         `json:"uptime"`
 	APower          float64     `json:"apower"`
+	Output          bool        `json:"output"` // Gen2/Plus relay state
 }
 
 type Temperature struct {

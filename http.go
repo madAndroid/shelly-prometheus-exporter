@@ -141,8 +141,8 @@ func fetchDevices(config configuration) {
 			// Gen2: if no relays but APower present, emit relay state for each channel (2PM etc)
 			if len(statusResponse.Relays) == 0 && (statusResponse.APower != 0 || urlHasOutputField(*statusResponse)) {
 				// Omit -Channel-0 for single-channel 1pmPlus/1pmplus
-				// Gen2 fallback: treat APower > 0 as relay ON
-				relayState := bool2float64(statusResponse.APower > 0)
+				// Gen2/Plus: use Output field for relay state if present, else fallback to APower > 0
+				relayState := bool2float64(statusResponse.Output)
 				if len(device.getStatusURLs()) == 1 && (device.Type == "1pmplus" || device.Type == "1pmPlus") {
 					relayLabels := map[string]string{
 						"name":    device.DisplayName,
