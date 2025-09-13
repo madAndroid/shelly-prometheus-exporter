@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 )
 
@@ -24,10 +25,22 @@ func getStatusResponseFromDevice(config configuration, d device) (*StatusRespons
 	}
 	defer response.Body.Close()
 
-	statusResponse := new(StatusResponse)
-	err = json.NewDecoder(response.Body).Decode(statusResponse)
+	if response.StatusCode != http.StatusOK {
+		bodyBytes := make([]byte, 1024)
+		n, _ := response.Body.Read(bodyBytes)
+		body := string(bodyBytes[:n])
+		return nil, fmt.Errorf("device '%s' returned HTTP %d: %s", d.DisplayName, response.StatusCode, body)
+	}
+
+	bodyBytes, err := io.ReadAll(response.Body)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error reading response body for device '%s': %v", d.DisplayName, err)
+	}
+
+	statusResponse := new(StatusResponse)
+	err = json.Unmarshal(bodyBytes, statusResponse)
+	if err != nil {
+		return nil, fmt.Errorf("error decoding JSON for device '%s': %v\nRaw body: %s", d.DisplayName, err, string(bodyBytes))
 	}
 
 	return statusResponse, nil
