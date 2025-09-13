@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 )
 
@@ -62,7 +63,7 @@ func fetchDevices(config configuration) {
 				"address": device.IPAddress,
 				"type":    device.Type,
 			}
-			fmt.Printf("[ERROR] Device: %s (%s)\n%s\n", device.DisplayName, device.IPAddress, err)
+			log.Printf("[ERROR] Device: %s (%s)\n%v\n", device.DisplayName, device.IPAddress, err)
 			errorCounter.With(labels).Inc()
 			continue
 		}
