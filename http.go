@@ -133,14 +133,20 @@ func fetchDevices(config configuration) {
 			}
 			// Gen2: if no relays but APower present, emit relay state for each channel (2PM etc)
 			if len(statusResponse.Relays) == 0 && statusResponse.APower != 0 {
-				if len(device.getStatusURLs()) == 1 {
-					// Only one channel, omit -Channel-0
+				// Omit -Channel-0 for single-channel 1pmPlus/1pmplus
+				if len(device.getStatusURLs()) == 1 && (device.Type == "1pmplus" || device.Type == "1pmPlus") {
 					relayLabels := map[string]string{
 						"name":    device.DisplayName,
 						"address": device.IPAddress,
 						"type":    device.Type,
 					}
-					// Assume output is ON if APower > 0
+					relayStateGauge.With(relayLabels).Set(bool2float64(statusResponse.APower > 0))
+				} else if len(device.getStatusURLs()) == 1 {
+					relayLabels := map[string]string{
+						"name":    device.DisplayName,
+						"address": device.IPAddress,
+						"type":    device.Type,
+					}
 					relayStateGauge.With(relayLabels).Set(bool2float64(statusResponse.APower > 0))
 				} else {
 					relayLabels := map[string]string{
