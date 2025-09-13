@@ -61,6 +61,7 @@ func bool2float64(b bool) float64 {
 
 func fetchDevices(config configuration) {
 	for _, device := range config.Devices {
+		log.Printf("[DEBUG] Polling device: %s (%s)", device.DisplayName, device.IPAddress)
 		statusResponse, err := getStatusResponseFromDevice(config, device)
 		if err != nil {
 			labels := map[string]string{
