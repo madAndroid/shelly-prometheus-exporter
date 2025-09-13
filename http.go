@@ -186,8 +186,8 @@ func fetchDevices(config configuration) {
 					powerGauge.With(meterLabels).Set(float64(meter.Power))
 				}
 			}
-			// Gen2: emit per-channel power metrics using APower if present and no meters
-			if len(statusResponse.Meters) == 0 && statusResponse.APower != 0 {
+			// Gen2: emit per-channel power metrics using APower if present and no meters (even if APower is zero)
+			if len(statusResponse.Meters) == 0 {
 				var meterLabels map[string]string
 				// Omit -Channel-0 for single-channel 1pmPlus/1pmplus
 				if len(device.getStatusURLs()) == 1 && (device.Type == "1pmplus" || device.Type == "1pmPlus") {
