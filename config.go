@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/spf13/viper"
@@ -30,21 +31,21 @@ type device struct {
 // For Gen1, returns /status.
 func (d device) getStatusURLs() []string {
 	var urls []string
-	// Gen2 detection: type contains "plus" or "pro" or is "2pm"/"2pmplus"
+	// Gen2 detection: type contains "plus" or "pro" or is "2pm"/"2pmplus" (case-insensitive)
 	isGen2 := false
-	if d.Type != "" {
-		t := d.Type
-		if t == "2pm" || t == "2pmplus" || t == "2pmPlus" || t == "plus" || t == "pro" || t == "1pmplus" || t == "1pmPlus" {
+	t := strings.ToLower(d.Type)
+	if t != "" {
+		if t == "2pm" || t == "2pmplus" || t == "plus" || t == "pro" || t == "1pmplus" {
 			isGen2 = true
 		}
-		if len(t) > 4 && (t[len(t)-4:] == "Plus" || t[len(t)-3:] == "pro") {
+		if strings.HasSuffix(t, "plus") || strings.HasSuffix(t, "pro") {
 			isGen2 = true
 		}
 	}
 	if isGen2 {
 		// Assume 2 channels for 2PM/2PM Plus, 1 for 1PM Plus
 		numChannels := 2
-		if d.Type == "1pmplus" || d.Type == "1pmPlus" {
+		if t == "1pmplus" {
 			numChannels = 1
 		}
 		for i := 0; i < numChannels; i++ {
