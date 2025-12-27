@@ -31,6 +31,14 @@ type device struct {
 // For Gen1, returns /status.
 func (d device) getStatusURLs() []string {
 	var urls []string
+	// Gen3 detection
+	if strings.Contains(strings.ToLower(d.Type), "gen3") {
+		if d.IPAddress != "" {
+			urls = append(urls, fmt.Sprintf("http://%s/rpc/Shelly.GetStatus", d.IPAddress))
+		}
+		return urls
+	}
+
 	// Gen2 detection: type contains "plus" or "pro" or is "2pm"/"2pmplus" (case-insensitive)
 	isGen2 := false
 	t := strings.ToLower(d.Type)

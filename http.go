@@ -53,11 +53,74 @@ func getStatusResponseFromURL(config configuration, d device, url string) (*Stat
 	}
 
 	statusResponse := new(StatusResponse)
+
+	// Gen3 Shelly.GetStatus handling
+	if len(url) > 16 && url[len(url)-16:] == "Shelly.GetStatus" {
+		return parseGen3StatusResponse(bodyBytes, d)
+	}
+
 	err = json.Unmarshal(bodyBytes, statusResponse)
 	if err != nil {
 		return nil, fmt.Errorf("error decoding JSON for device '%s': %v\nRaw body: %s", d.DisplayName, err, string(bodyBytes))
 	}
 
+	return statusResponse, nil
+}
+
+func parseGen3StatusResponse(bodyBytes []byte, d device) (*StatusResponse, error) {
+	statusResponse := new(StatusResponse)
+	var rawMap map[string]json.RawMessage
+	if err := json.Unmarshal(bodyBytes, &rawMap); err != nil {
+		return nil, fmt.Errorf("error decoding Gen3 JSON for device '%s': %v", d.DisplayName, err)
+	}
+
+	// Initialize slices to ensure they are big enough or append in order
+	// We expect switch:0, switch:1, etc.
+	for i := 0; i < 10; i++ {
+		foundPower := false
+
+		// Switch components (Relays) & Power (if embedded in switch)
+		key := fmt.Sprintf("switch:%d", i)
+		if val, ok := rawMap[key]; ok {
+			// Unmarshal into map to check for key existence
+			var swMap map[string]interface{}
+			if err := json.Unmarshal(val, &swMap); err == nil {
+				// Relay Output
+				if output, ok := swMap["output"].(bool); ok {
+					statusResponse.Relays = append(statusResponse.Relays, Relay{Ison: output})
+				} else {
+					var sw struct {
+						Output bool `json:"output"`
+					}
+					json.Unmarshal(val, &sw)
+					statusResponse.Relays = append(statusResponse.Relays, Relay{Ison: sw.Output})
+				}
+
+				// Check for apower
+				if apowerVal, ok := swMap["apower"]; ok {
+					// apowerVal is interface{}, likely float64
+					if apower, ok := apowerVal.(float64); ok {
+						statusResponse.Meters = append(statusResponse.Meters, Meter{Power: float32(apower)})
+						foundPower = true
+					}
+				}
+			}
+		}
+
+		// PM1 components (Meters)
+		// Only check if we didn't already find power in switch
+		if !foundPower {
+			keyPM := fmt.Sprintf("pm1:%d", i)
+			if val, ok := rawMap[keyPM]; ok {
+				var pm struct {
+					APower float32 `json:"apower"`
+				}
+				if err := json.Unmarshal(val, &pm); err == nil {
+					statusResponse.Meters = append(statusResponse.Meters, Meter{Power: pm.APower})
+				}
+			}
+		}
+	}
 	return statusResponse, nil
 }
 

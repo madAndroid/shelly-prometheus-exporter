@@ -2,12 +2,18 @@ port: 9123
 requestTimeout: 5s
 scrapeInterval: 60s
 devices:
-  - IPAddress: "192.168.88.38"
-    displayName: "OfficePlug"
+  - IPAddress: "192.168.66.151"
+    displayName: "Office"
     type: "1pm"
-  - IPAddress: "192.168.88.39"
-    displayName: "FamilyRoom2PM"
+  - IPAddress: "192.168.66.154"
+    displayName: "Lounge"
     type: "2pm"
     channelNames:
       0: "LeftBlind"
       1: "RightBlind"
+  - IPAddress: "192.168.66.164"
+    displayName: "Bedroom"
+    type: "2pmgen3"
+    channelNames:
+      0: "Plugs"
+      1: "Heater"
