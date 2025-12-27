@@ -14,6 +14,7 @@ devices:
   - IPAddress: "192.168.66.164"
     displayName: "Bedroom"
     type: "2pmgen3"
+    generation: 3
     channelNames:
       0: "Plugs"
       1: "Heater"
