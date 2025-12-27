@@ -44,6 +44,17 @@ func TestStatusResponseToStruct(t *testing.T) {
       "positioning": true
     }
   ],
+  "relays": [
+    {
+      "ison": true,
+      "has_timer": false,
+      "timer_started": 0,
+      "timer_duration": 0,
+      "timer_remaining": 0,
+      "overpower": false,
+      "source": "cloud"
+    }
+  ],
   "meters": [
     {
       "power": 0.00,
@@ -110,8 +121,8 @@ func TestStatusResponseToStruct(t *testing.T) {
 		t.Errorf("could not unmarshal status endpoint content: %v", err)
 	}
 
-	if status.Temperature != 60.49 {
-		t.Errorf("Temperature = %f; want 60.49", status.Temperature)
+	if !status.Temperature.Valid || (status.Temperature.Value != 60.49 && status.Temperature.TC != 60.49) {
+		t.Errorf("Temperature = %+v; want 60.49", status.Temperature)
 	}
 
 	if status.Overtemperature != false {

@@ -26,4 +26,7 @@ docker-build:
 
 .PHONY: docker-run
 docker-run:
-	 docker run --name shelly-exporter -v "$$(pwd)"/config.yaml:/app/config.yaml --rm -it shelly-exporter:latest
+	 docker run --name shelly-exporter \
+	 	-v "$$(pwd)"/config.yaml:/app/config.yaml \
+		-p 127.0.0.1:9123:9123/tcp \
+		--rm -it shelly-exporter:latest
