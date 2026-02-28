@@ -6,9 +6,10 @@ COPY go.sum .
 RUN go mod download -json -x
 
 FROM dependencies as builder
+ARG GIT_COMMIT=unknown
 COPY . .
 RUN go test ./... -timeout 30s -cover
-RUN CGO_ENABLED=0 go build -o shelly-exporter
+RUN CGO_ENABLED=0 go build -ldflags "-X main.gitCommit=${GIT_COMMIT}" -o shelly-exporter
 
 FROM debian:bullseye-slim
 #FROM alpine:latest

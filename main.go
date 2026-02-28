@@ -10,11 +10,15 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
+var gitCommit string
+
 func main() {
 	debug := os.Getenv("DEBUG") != ""
 	if debug {
 		log.Println("=== SHELLY EXPORTER DEBUG BUILD ===")
 	}
+	log.Printf("Starting shelly-prometheus-exporter. Git Commit: %s", gitCommit)
+
 	config := getConfig()
 	if debug {
 		log.Printf("Loaded config: %+v\n", config)

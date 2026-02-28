@@ -53,6 +53,7 @@ func getStatusResponseFromURL(config configuration, d device, url string) (*Stat
 	}
 
 	statusResponse := new(StatusResponse)
+
 	err = json.Unmarshal(bodyBytes, statusResponse)
 	if err != nil {
 		return nil, fmt.Errorf("error decoding JSON for device '%s': %v\nRaw body: %s", d.DisplayName, err, string(bodyBytes))
