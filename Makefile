@@ -23,10 +23,17 @@ test:
 	go test ./... -timeout 30s -v -cover
 
 
-.PHONY: podman-build
-podman-build:
-	podman build -t shelly-exporter .
+VERSION := $(shell cat VERSION)
+GIT_COMMIT := $(shell git rev-parse --short HEAD)
 
+.PHONY: podman-build
+podman-build: podman-clean
+	podman build --arch amd64 --no-cache \
+		--build-arg GIT_COMMIT=$(GIT_COMMIT) \
+		--tag madandroid/shelly-prometheus-exporter:$(VERSION)-$(GIT_COMMIT) .
+
+podman-push:
+	podman push madandroid/shelly-prometheus-exporter:$(VERSION)-$(GIT_COMMIT)
 
 .PHONY: podman-run
 podman-run:
@@ -34,3 +41,9 @@ podman-run:
 		-v $(shell pwd)/config.yaml:/app/config.yaml \
 		-p 127.0.0.1:9123:9123/tcp \
 		--rm -it shelly-exporter:latest
+
+.PHONY: podman-clean
+podman-clean:
+	podman container prune -f
+	podman image rm -f shelly-exporter || true
+	podman image prune -a -f
