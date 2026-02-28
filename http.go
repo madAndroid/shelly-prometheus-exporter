@@ -211,12 +211,12 @@ func fetchDevices(config configuration) {
 							   meterLabels["name"] = fmt.Sprintf("%s-%s", device.DisplayName, name)
 							   meterLabels["address"] = fmt.Sprintf("%s-%s", device.IPAddress, name)
 						   } else {
-							   meterLabels["name"] = fmt.Sprintf("%s-EMeter-%d", device.DisplayName, i)
-							   meterLabels["address"] = fmt.Sprintf("%s-EMeter-%d", device.IPAddress, i)
+							   meterLabels["name"] = fmt.Sprintf("%s-Channel-%d", device.DisplayName, i)
+							   meterLabels["address"] = fmt.Sprintf("%s-Channel-%d", device.IPAddress, i)
 						   }
 					   } else {
-						   meterLabels["name"] = fmt.Sprintf("%s-EMeter-%d", device.DisplayName, i)
-						   meterLabels["address"] = fmt.Sprintf("%s-EMeter-%d", device.IPAddress, i)
+						   meterLabels["name"] = fmt.Sprintf("%s-Channel-%d", device.DisplayName, i)
+						   meterLabels["address"] = fmt.Sprintf("%s-Channel-%d", device.IPAddress, i)
 					   }
 					   meterLabels["type"] = device.Type
 					   powerGauge.With(meterLabels).Set(float64(emeter.Power))

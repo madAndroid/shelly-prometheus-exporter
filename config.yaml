@@ -70,6 +70,9 @@ devices:
   - IPAddress: main-db-em.int.stangl.co.za
     displayName: MainDB
     type: em
+    channelNames:
+      0: "DB-Board-Plugs"
+      1: "DB-Board-Lights"
   - IPAddress: network-cabinet-psu.int.stangl.co.za
     displayName: NetworkCabinetPSU
     type: 1pmPlus
