@@ -30,9 +30,9 @@ func getStatusResponseFromURL(config configuration, d device, url string) (*Stat
 		}
 		return nil, fmt.Errorf("error while doing the request for device '%s': %v", d.DisplayName, err)
 	}
-	if debug {
-		log.Printf("[DEBUG] Device: %s (%s) HTTP %d\nHeaders: %v\n", d.DisplayName, d.IPAddress, response.StatusCode, response.Header)
-	}
+	// if debug {
+	//         log.Printf("[DEBUG] Device: %s (%s) HTTP %d\nHeaders: %v\n", d.DisplayName, d.IPAddress, response.StatusCode, response.Header)
+	// }
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
@@ -48,9 +48,9 @@ func getStatusResponseFromURL(config configuration, d device, url string) (*Stat
 	}
 
 	// Log the raw response body for debugging
-	if debug {
-		log.Printf("[DEBUG] Device: %s (%s) raw response:\n%s\n", d.DisplayName, d.IPAddress, string(bodyBytes))
-	}
+	// if debug {
+	//         log.Printf("[DEBUG] Device: %s (%s) raw response:\n%s\n", d.DisplayName, d.IPAddress, string(bodyBytes))
+	// }
 
 	statusResponse := new(StatusResponse)
 
@@ -77,9 +77,9 @@ func bool2float64(b bool) float64 {
 func fetchDevices(config configuration) {
 	debug := os.Getenv("DEBUG") != ""
 	for _, device := range config.Devices {
-		if debug {
-			// log.Printf("[DEBUG] Polling device: %s (%s)", device.DisplayName, device.IPAddress)
-		}
+		// if debug {
+		//         log.Printf("[DEBUG] Polling device: %s (%s)", device.DisplayName, device.IPAddress)
+		// }
 		urls := device.getStatusURLs()
 		for idx, url := range urls {
 			// Determine friendly channel name if present
