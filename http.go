@@ -61,7 +61,6 @@ func getStatusResponseFromURL(config configuration, d device, url string) (*Stat
 
 	return statusResponse, nil
 }
-
 func urlHasOutputField(_ StatusResponse) bool {
 	// In Go, bool fields default to false, so we can't distinguish missing from false.
 	// But for Gen2, if APower is present, Output is always present, so just return true if APower is present.
@@ -166,6 +165,7 @@ func fetchDevices(config configuration) {
 					relayStateGauge.With(relayLabels).Set(bool2float64(relay.Ison))
 					if debug {
 						log.Printf("[DEBUG] Relay metric for %s: state=%v", relayLabels["name"], relay.Ison)
+					}
 				}
 			}
 
