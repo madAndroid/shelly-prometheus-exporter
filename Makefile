@@ -1,15 +1,17 @@
 help:
 	@echo "Available commands:"
-	@echo "	run                - runs the exporter"
-	@echo "	watch              - runs the exporter with hot reload"
-	@echo "	test               - runs the tests"
-	@echo "	docker-build       - builds the docker container"
-	@echo "	docker-run         - runs the docker container"
+	@echo "\trun                - runs the exporter"
+	@echo "\twatch              - runs the exporter with hot reload"
+	@echo "\ttest               - runs the tests"
+	@echo "\tpodman-build       - builds the podman container"
+	@echo "\tpodman-run         - runs the podman container"
 	@echo ""
 
 .PHONY: run
 run:
-	go build && ./shelly-exporter
+	go build && ./shelly-exporter \
+		--config config.yaml \
+		--web.listen-address :9123
 
 .PHONY: watch
 watch:
@@ -20,13 +22,15 @@ watch:
 test:
 	go test ./... -timeout 30s -v -cover
 
-.PHONY: docker-build
-docker-build:
-	docker build -t shelly-exporter .
 
-.PHONY: docker-run
-docker-run:
-	 docker run --name shelly-exporter \
-	 	-v "$$(pwd)"/config.yaml:/app/config.yaml \
+.PHONY: podman-build
+podman-build:
+	podman build -t shelly-exporter .
+
+
+.PHONY: podman-run
+podman-run:
+	podman run --name shelly-exporter \
+		-v $(shell pwd)/config.yaml:/app/config.yaml \
 		-p 127.0.0.1:9123:9123/tcp \
 		--rm -it shelly-exporter:latest
