@@ -200,35 +200,54 @@ func fetchDevices(config configuration) {
 				}
 			}
 
-			// Emit power metrics (shelly_power) for all devices
-			// Gen1: emit per-meter power metrics, but for single-meter devices (e.g., 1PM, 1PMPlus), omit the -Meter-0 suffix
-			if len(statusResponse.Meters) == 1 && (device.Type == "1pm" || device.Type == "1PM" || device.Type == "1pmplus" || device.Type == "1pmPlus") {
-				meterLabels := map[string]string{
-					"name":    device.DisplayName,
-					"address": device.IPAddress,
-					"type":    device.Type,
-				}
-				powerGauge.With(meterLabels).Set(float64(statusResponse.Meters[0].Power))
-			} else if len(statusResponse.Meters) > 1 {
-				for i, meter := range statusResponse.Meters {
-					meterLabels := map[string]string{}
-					if device.ChannelNames != nil {
-						key := fmt.Sprintf("%d", i)
-						if name, ok := device.ChannelNames[key]; ok && name != "" {
-							meterLabels["name"] = fmt.Sprintf("%s-%s", device.DisplayName, name)
-							meterLabels["address"] = fmt.Sprintf("%s-%s", device.IPAddress, name)
-						} else {
-							meterLabels["name"] = fmt.Sprintf("%s-Meter-%d", device.DisplayName, i)
-							meterLabels["address"] = fmt.Sprintf("%s-Meter-%d", device.IPAddress, i)
-						}
-					} else {
-						meterLabels["name"] = fmt.Sprintf("%s-Meter-%d", device.DisplayName, i)
-						meterLabels["address"] = fmt.Sprintf("%s-Meter-%d", device.IPAddress, i)
-					}
-					meterLabels["type"] = device.Type
-					powerGauge.With(meterLabels).Set(float64(meter.Power))
-				}
-			}
+			   // Emit power metrics (shelly_power) for all devices
+			   // Shelly EM: emit per-emeter power metrics
+			   if device.Type == "em" && len(statusResponse.EMeters) > 0 {
+				   for i, emeter := range statusResponse.EMeters {
+					   meterLabels := map[string]string{}
+					   if device.ChannelNames != nil {
+						   key := fmt.Sprintf("%d", i)
+						   if name, ok := device.ChannelNames[key]; ok && name != "" {
+							   meterLabels["name"] = fmt.Sprintf("%s-%s", device.DisplayName, name)
+							   meterLabels["address"] = fmt.Sprintf("%s-%s", device.IPAddress, name)
+						   } else {
+							   meterLabels["name"] = fmt.Sprintf("%s-EMeter-%d", device.DisplayName, i)
+							   meterLabels["address"] = fmt.Sprintf("%s-EMeter-%d", device.IPAddress, i)
+						   }
+					   } else {
+						   meterLabels["name"] = fmt.Sprintf("%s-EMeter-%d", device.DisplayName, i)
+						   meterLabels["address"] = fmt.Sprintf("%s-EMeter-%d", device.IPAddress, i)
+					   }
+					   meterLabels["type"] = device.Type
+					   powerGauge.With(meterLabels).Set(float64(emeter.Power))
+				   }
+			   } else if len(statusResponse.Meters) == 1 && (device.Type == "1pm" || device.Type == "1PM" || device.Type == "1pmplus" || device.Type == "1pmPlus") {
+				   meterLabels := map[string]string{
+					   "name":    device.DisplayName,
+					   "address": device.IPAddress,
+					   "type":    device.Type,
+				   }
+				   powerGauge.With(meterLabels).Set(float64(statusResponse.Meters[0].Power))
+			   } else if len(statusResponse.Meters) > 1 {
+				   for i, meter := range statusResponse.Meters {
+					   meterLabels := map[string]string{}
+					   if device.ChannelNames != nil {
+						   key := fmt.Sprintf("%d", i)
+						   if name, ok := device.ChannelNames[key]; ok && name != "" {
+							   meterLabels["name"] = fmt.Sprintf("%s-%s", device.DisplayName, name)
+							   meterLabels["address"] = fmt.Sprintf("%s-%s", device.IPAddress, name)
+						   } else {
+							   meterLabels["name"] = fmt.Sprintf("%s-Meter-%d", device.DisplayName, i)
+							   meterLabels["address"] = fmt.Sprintf("%s-Meter-%d", device.IPAddress, i)
+						   }
+					   } else {
+						   meterLabels["name"] = fmt.Sprintf("%s-Meter-%d", device.DisplayName, i)
+						   meterLabels["address"] = fmt.Sprintf("%s-Meter-%d", device.IPAddress, i)
+					   }
+					   meterLabels["type"] = device.Type
+					   powerGauge.With(meterLabels).Set(float64(meter.Power))
+				   }
+			   }
 			// Gen2: emit per-channel power metrics using APower if present and no meters (even if APower is zero)
 			if len(statusResponse.Meters) == 0 {
 				var meterLabels map[string]string
