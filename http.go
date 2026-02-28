@@ -30,9 +30,9 @@ func getStatusResponseFromURL(config configuration, d device, url string) (*Stat
 		}
 		return nil, fmt.Errorf("error while doing the request for device '%s': %v", d.DisplayName, err)
 	}
-	if debug {
-		log.Printf("[DEBUG] Device: %s (%s) HTTP %d\nHeaders: %v\n", d.DisplayName, d.IPAddress, response.StatusCode, response.Header)
-	}
+	// if debug {
+	//         log.Printf("[DEBUG] Device: %s (%s) HTTP %d\nHeaders: %v\n", d.DisplayName, d.IPAddress, response.StatusCode, response.Header)
+	// }
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
@@ -48,9 +48,9 @@ func getStatusResponseFromURL(config configuration, d device, url string) (*Stat
 	}
 
 	// Log the raw response body for debugging
-	if debug {
-		log.Printf("[DEBUG] Device: %s (%s) raw response:\n%s\n", d.DisplayName, d.IPAddress, string(bodyBytes))
-	}
+	// if debug {
+	//         log.Printf("[DEBUG] Device: %s (%s) raw response:\n%s\n", d.DisplayName, d.IPAddress, string(bodyBytes))
+	// }
 
 	statusResponse := new(StatusResponse)
 
@@ -61,7 +61,6 @@ func getStatusResponseFromURL(config configuration, d device, url string) (*Stat
 
 	return statusResponse, nil
 }
-
 func urlHasOutputField(_ StatusResponse) bool {
 	// In Go, bool fields default to false, so we can't distinguish missing from false.
 	// But for Gen2, if APower is present, Output is always present, so just return true if APower is present.
@@ -78,9 +77,9 @@ func bool2float64(b bool) float64 {
 func fetchDevices(config configuration) {
 	debug := os.Getenv("DEBUG") != ""
 	for _, device := range config.Devices {
-		if debug {
-			log.Printf("[DEBUG] Polling device: %s (%s)", device.DisplayName, device.IPAddress)
-		}
+		// if debug {
+		//         log.Printf("[DEBUG] Polling device: %s (%s)", device.DisplayName, device.IPAddress)
+		// }
 		urls := device.getStatusURLs()
 		for idx, url := range urls {
 			// Determine friendly channel name if present
@@ -91,9 +90,9 @@ func fetchDevices(config configuration) {
 					channelName = name
 				}
 			}
-			if debug {
-				log.Printf("[DEBUG] Polling URL: %s", url)
-			}
+			// if debug {
+			//     log.Printf("[DEBUG] Polling URL: %s", url)
+			// }
 			// For Gen2, treat each channel as a separate device metric
 			statusResponse, err := getStatusResponseFromURL(config, device, url)
 			if err != nil {
@@ -131,6 +130,9 @@ func fetchDevices(config configuration) {
 			voltageGauge.With(labels).Set(float64(statusResponse.Voltage))
 			uptimeGauge.With(labels).Set(float64(statusResponse.Uptime))
 			isUpdateAvailableGauge.With(labels).Set(bool2float64(statusResponse.HasUpdate))
+			if debug {
+				log.Printf("[DEBUG] Metrics for %s: temp=%.2f, overtemp=%v, voltage=%.2f, uptime=%d, update=%v", labels["name"], temp, statusResponse.Overtemperature, statusResponse.Voltage, statusResponse.Uptime, statusResponse.HasUpdate)
+			}
 
 			// For single-relay devices, omit -Relay-0 suffix
 			if len(statusResponse.Relays) == 1 {
@@ -140,6 +142,9 @@ func fetchDevices(config configuration) {
 					"type":    device.Type,
 				}
 				relayStateGauge.With(relayLabels).Set(bool2float64(statusResponse.Relays[0].Ison))
+				if debug {
+					log.Printf("[DEBUG] Relay metric for %s: state=%v", relayLabels["name"], statusResponse.Relays[0].Ison)
+				}
 			} else {
 				for i, relay := range statusResponse.Relays {
 					relayLabels := map[string]string{}
@@ -158,6 +163,9 @@ func fetchDevices(config configuration) {
 					}
 					relayLabels["type"] = device.Type
 					relayStateGauge.With(relayLabels).Set(bool2float64(relay.Ison))
+					if debug {
+						log.Printf("[DEBUG] Relay metric for %s: state=%v", relayLabels["name"], relay.Ison)
+					}
 				}
 			}
 
@@ -173,6 +181,9 @@ func fetchDevices(config configuration) {
 						"type":    device.Type,
 					}
 					relayStateGauge.With(relayLabels).Set(relayState)
+					if debug {
+						log.Printf("[DEBUG] Relay metric for %s: state=%v", relayLabels["name"], relayState)
+					}
 				} else if len(device.getStatusURLs()) == 1 {
 					relayLabels := map[string]string{
 						"name":    device.DisplayName,
@@ -200,35 +211,57 @@ func fetchDevices(config configuration) {
 				}
 			}
 
-			// Emit power metrics (shelly_power) for all devices
-			// Gen1: emit per-meter power metrics, but for single-meter devices (e.g., 1PM, 1PMPlus), omit the -Meter-0 suffix
-			if len(statusResponse.Meters) == 1 && (device.Type == "1pm" || device.Type == "1PM" || device.Type == "1pmplus" || device.Type == "1pmPlus") {
-				meterLabels := map[string]string{
-					"name":    device.DisplayName,
-					"address": device.IPAddress,
-					"type":    device.Type,
-				}
-				powerGauge.With(meterLabels).Set(float64(statusResponse.Meters[0].Power))
-			} else if len(statusResponse.Meters) > 1 {
-				for i, meter := range statusResponse.Meters {
-					meterLabels := map[string]string{}
-					if device.ChannelNames != nil {
-						key := fmt.Sprintf("%d", i)
-						if name, ok := device.ChannelNames[key]; ok && name != "" {
-							meterLabels["name"] = fmt.Sprintf("%s-%s", device.DisplayName, name)
-							meterLabels["address"] = fmt.Sprintf("%s-%s", device.IPAddress, name)
-						} else {
-							meterLabels["name"] = fmt.Sprintf("%s-Meter-%d", device.DisplayName, i)
-							meterLabels["address"] = fmt.Sprintf("%s-Meter-%d", device.IPAddress, i)
-						}
-					} else {
-						meterLabels["name"] = fmt.Sprintf("%s-Meter-%d", device.DisplayName, i)
-						meterLabels["address"] = fmt.Sprintf("%s-Meter-%d", device.IPAddress, i)
-					}
-					meterLabels["type"] = device.Type
-					powerGauge.With(meterLabels).Set(float64(meter.Power))
-				}
-			}
+			   // Emit power metrics (shelly_power) for all devices
+			   // Shelly EM: emit per-emeter power metrics
+			   if device.Type == "em" && len(statusResponse.EMeters) > 0 {
+				   for i, emeter := range statusResponse.EMeters {
+					   meterLabels := map[string]string{}
+					   if device.ChannelNames != nil {
+						   key := fmt.Sprintf("%d", i)
+						   if name, ok := device.ChannelNames[key]; ok && name != "" {
+							   meterLabels["name"] = fmt.Sprintf("%s-%s", device.DisplayName, name)
+							   meterLabels["address"] = fmt.Sprintf("%s-%s", device.IPAddress, name)
+						   } else {
+							   meterLabels["name"] = fmt.Sprintf("%s-Channel-%d", device.DisplayName, i)
+							   meterLabels["address"] = fmt.Sprintf("%s-Channel-%d", device.IPAddress, i)
+						   }
+					   } else {
+						   meterLabels["name"] = fmt.Sprintf("%s-Channel-%d", device.DisplayName, i)
+						   meterLabels["address"] = fmt.Sprintf("%s-Channel-%d", device.IPAddress, i)
+					   }
+					   meterLabels["type"] = device.Type
+					   powerGauge.With(meterLabels).Set(float64(emeter.Power))
+					   if debug {
+						   log.Printf("[DEBUG] Power metric for %s: power=%.2f", meterLabels["name"], emeter.Power)
+					   }
+				   }
+			   } else if len(statusResponse.Meters) == 1 && (device.Type == "1pm" || device.Type == "1PM" || device.Type == "1pmplus" || device.Type == "1pmPlus") {
+				   meterLabels := map[string]string{
+					   "name":    device.DisplayName,
+					   "address": device.IPAddress,
+					   "type":    device.Type,
+				   }
+				   powerGauge.With(meterLabels).Set(float64(statusResponse.Meters[0].Power))
+			   } else if len(statusResponse.Meters) > 1 {
+				   for i, meter := range statusResponse.Meters {
+					   meterLabels := map[string]string{}
+					   if device.ChannelNames != nil {
+						   key := fmt.Sprintf("%d", i)
+						   if name, ok := device.ChannelNames[key]; ok && name != "" {
+							   meterLabels["name"] = fmt.Sprintf("%s-%s", device.DisplayName, name)
+							   meterLabels["address"] = fmt.Sprintf("%s-%s", device.IPAddress, name)
+						   } else {
+							   meterLabels["name"] = fmt.Sprintf("%s-Meter-%d", device.DisplayName, i)
+							   meterLabels["address"] = fmt.Sprintf("%s-Meter-%d", device.IPAddress, i)
+						   }
+					   } else {
+						   meterLabels["name"] = fmt.Sprintf("%s-Meter-%d", device.DisplayName, i)
+						   meterLabels["address"] = fmt.Sprintf("%s-Meter-%d", device.IPAddress, i)
+					   }
+					   meterLabels["type"] = device.Type
+					   powerGauge.With(meterLabels).Set(float64(meter.Power))
+				   }
+			   }
 			// Gen2: emit per-channel power metrics using APower if present and no meters (even if APower is zero)
 			if len(statusResponse.Meters) == 0 {
 				var meterLabels map[string]string

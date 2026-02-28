@@ -10,6 +10,7 @@ type StatusResponse struct {
 	MQTT            MQTT        `json:"mqtt"`
 	Relays          []Relay     `json:"relays"`
 	Meters          []Meter     `json:"meters"`
+	EMeters         []EMMeter   `json:"emeters"`
 	Inputs          []Input     `json:"inputs"`
 	Temperature     Temperature `json:"temperature"`
 	Overtemperature bool        `json:"overtemperature"`
@@ -83,13 +84,14 @@ type Meter struct {
 	Total     int       `json:"total"`
 }
 
-type EMMeters struct {
-	Power    float32 `json:"power"`
-	Reactive float32 `json:"reactive"`
-	Voltage  float32 `json:"voltage"`
-	Valid    bool    `json:"is_valid"`
-	Total    float32 `json:"total"`
-	TotalRet float32 `json:"total_returned"`
+type EMMeter struct {
+	Power         float32 `json:"power"`
+	Reactive      float32 `json:"reactive"`
+	PF            float32 `json:"pf"`
+	Voltage       float32 `json:"voltage"`
+	Valid         bool    `json:"is_valid"`
+	Total         float32 `json:"total"`
+	TotalReturned float32 `json:"total_returned"`
 }
 
 type Relay struct {
