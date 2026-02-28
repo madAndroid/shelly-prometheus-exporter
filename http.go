@@ -79,7 +79,7 @@ func fetchDevices(config configuration) {
 	debug := os.Getenv("DEBUG") != ""
 	for _, device := range config.Devices {
 		if debug {
-			log.Printf("[DEBUG] Polling device: %s (%s)", device.DisplayName, device.IPAddress)
+			// log.Printf("[DEBUG] Polling device: %s (%s)", device.DisplayName, device.IPAddress)
 		}
 		urls := device.getStatusURLs()
 		for idx, url := range urls {
@@ -91,9 +91,9 @@ func fetchDevices(config configuration) {
 					channelName = name
 				}
 			}
-			if debug {
-				log.Printf("[DEBUG] Polling URL: %s", url)
-			}
+			// if debug {
+			//     log.Printf("[DEBUG] Polling URL: %s", url)
+			// }
 			// For Gen2, treat each channel as a separate device metric
 			statusResponse, err := getStatusResponseFromURL(config, device, url)
 			if err != nil {
@@ -131,6 +131,9 @@ func fetchDevices(config configuration) {
 			voltageGauge.With(labels).Set(float64(statusResponse.Voltage))
 			uptimeGauge.With(labels).Set(float64(statusResponse.Uptime))
 			isUpdateAvailableGauge.With(labels).Set(bool2float64(statusResponse.HasUpdate))
+			if debug {
+				log.Printf("[DEBUG] Metrics for %s: temp=%.2f, overtemp=%v, voltage=%.2f, uptime=%d, update=%v", labels["name"], temp, statusResponse.Overtemperature, statusResponse.Voltage, statusResponse.Uptime, statusResponse.HasUpdate)
+			}
 
 			// For single-relay devices, omit -Relay-0 suffix
 			if len(statusResponse.Relays) == 1 {
@@ -140,6 +143,9 @@ func fetchDevices(config configuration) {
 					"type":    device.Type,
 				}
 				relayStateGauge.With(relayLabels).Set(bool2float64(statusResponse.Relays[0].Ison))
+				if debug {
+					log.Printf("[DEBUG] Relay metric for %s: state=%v", relayLabels["name"], statusResponse.Relays[0].Ison)
+				}
 			} else {
 				for i, relay := range statusResponse.Relays {
 					relayLabels := map[string]string{}
@@ -158,6 +164,8 @@ func fetchDevices(config configuration) {
 					}
 					relayLabels["type"] = device.Type
 					relayStateGauge.With(relayLabels).Set(bool2float64(relay.Ison))
+					if debug {
+						log.Printf("[DEBUG] Relay metric for %s: state=%v", relayLabels["name"], relay.Ison)
 				}
 			}
 
@@ -173,6 +181,9 @@ func fetchDevices(config configuration) {
 						"type":    device.Type,
 					}
 					relayStateGauge.With(relayLabels).Set(relayState)
+					if debug {
+						log.Printf("[DEBUG] Relay metric for %s: state=%v", relayLabels["name"], relayState)
+					}
 				} else if len(device.getStatusURLs()) == 1 {
 					relayLabels := map[string]string{
 						"name":    device.DisplayName,
@@ -220,6 +231,9 @@ func fetchDevices(config configuration) {
 					   }
 					   meterLabels["type"] = device.Type
 					   powerGauge.With(meterLabels).Set(float64(emeter.Power))
+					   if debug {
+						   log.Printf("[DEBUG] Power metric for %s: power=%.2f", meterLabels["name"], emeter.Power)
+					   }
 				   }
 			   } else if len(statusResponse.Meters) == 1 && (device.Type == "1pm" || device.Type == "1PM" || device.Type == "1pmplus" || device.Type == "1pmPlus") {
 				   meterLabels := map[string]string{
